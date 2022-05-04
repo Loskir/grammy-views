@@ -1,0 +1,15 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules"
+  ],
+  "watch": [
+    "dist/",
+    ".env"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 500
+}
