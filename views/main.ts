@@ -1,7 +1,7 @@
 import {View} from '../lib/view'
 import {CustomContext} from '../types/context'
 import {items} from '../data/items'
-import {goToItem, GoToItemCodec, ItemView} from './item'
+import {goToItem} from './item'
 import {ConstantCodec} from '../lib/codec'
 
 export const MainView = new View<CustomContext>('main')
@@ -24,8 +24,9 @@ MainView.render((ctx) => {
   })
 })
 MainView.global.command('start', (ctx, next) => MainView.enter(ctx, next))
-// this should be near the ItemView
-MainView.codec(GoToItemCodec, (ctx, next) => ItemView.enter(ctx, next))
 
 export const MainMenuCodec = new ConstantCodec('main-menu')
 export const goToMainMenu = () => MainMenuCodec.encode()
+
+// this should be a global handler, but .global does not have .codec method yet
+MainView.codec(MainMenuCodec, (ctx, next) => MainView.enter(ctx, next))

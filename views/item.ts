@@ -1,7 +1,7 @@
 import {DataFlavor, View} from '../lib/view'
 import {CustomContext} from '../types/context'
 import {items} from '../data/items'
-import {goToMainMenu, MainMenuCodec, MainView} from './main'
+import {goToMainMenu} from './main'
 import {Codec} from '../lib/codec'
 
 export const GoToItemCodec = new Codec<{ id: number }>({
@@ -53,5 +53,5 @@ ItemView.render((ctx) => {
     },
   })
 })
-// this should be near the MainView
-ItemView.codec(MainMenuCodec, (ctx, next) => MainView.enter(ctx, next))
+// this should be a global handler, but .global does not have .codec method yet
+ItemView.codec(GoToItemCodec, (ctx, next) => ItemView.enter(ctx, next))
