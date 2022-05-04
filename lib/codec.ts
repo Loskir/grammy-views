@@ -1,4 +1,5 @@
-import {MiddlewareFn} from 'grammy'
+import {Context, Filter} from 'grammy'
+import {DataFlavor} from './view'
 
 type Encoder<T> = (data: T) => string
 type Decoder<T> = (s: string) => T | null
@@ -12,17 +13,14 @@ export class Codec<T> {
     this.decode = decode
   }
 
-  middleware(): MiddlewareFn {
-    return (ctx, next) => {
-      if (!ctx.callbackQuery?.data) {
-        return next()
-      }
-      const match = this.decode(ctx.callbackQuery.data)
-      if (match === null) {
-        return next()
-      }
-
+  filter<C extends Filter<Context, 'callback_query:data'>>(ctx: C): ctx is C & DataFlavor<T> {
+    const decoded = this.decode(ctx.callbackQuery.data)
+    if (decoded === null) {
+      return false
     }
+    // @ts-ignore
+    ctx.data = decoded
+    return true
   }
 }
 

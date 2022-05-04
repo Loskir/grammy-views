@@ -23,20 +23,10 @@ export class View<C extends Context = Context, Flavor = {}> extends Composer<C> 
     return this.renderComposer.middleware()(ctx, next)
   }
 
-  codec<T>(codec: Codec<T>, ...middlewares: MiddlewareFn<Filter<C, 'callback_query:data'> & DataFlavor<T>>[]): View<Filter<C, 'callback_query:data'> & DataFlavor<T>> {
-    // @ts-ignore
-    // @ts-ignore
+  codec<T>(codec: Codec<T>, ...middlewares: MiddlewareFn<Filter<C, 'callback_query:data'> & DataFlavor<T>>[]): Composer<Filter<C, 'callback_query:data'> & DataFlavor<T>> {
     return this
       .on('callback_query:data')
-      .filter((ctx): ctx is Filter<C, 'callback_query:data'> & DataFlavor<T> => {
-        const decoded = codec.decode(ctx.callbackQuery.data)
-        if (decoded === null) {
-          return false
-        }
-        // @ts-ignore
-        ctx.data = decoded
-        return true
-      }, ...middlewares)
+      .filter(codec.filter, ...middlewares)
   }
 }
 

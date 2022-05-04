@@ -53,4 +53,5 @@ ItemView.render((ctx) => {
     },
   })
 })
+// this should be near the MainView
 ItemView.codec(MainMenuCodec, (ctx, next) => MainView.enter(ctx, next))

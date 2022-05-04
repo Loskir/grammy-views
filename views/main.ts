@@ -24,6 +24,7 @@ MainView.render((ctx) => {
   })
 })
 MainView.global.command('start', (ctx, next) => MainView.enter(ctx, next))
+// this should be near the ItemView
 MainView.codec(GoToItemCodec, (ctx, next) => ItemView.enter(ctx, next))
 
 export const MainMenuCodec = new ConstantCodec('main-menu')
