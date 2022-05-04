@@ -1,7 +1,9 @@
-import {Codec, ConstantCodec, DataFlavor, View} from './views'
-import {CustomContext} from './types/context'
+import {Codec, DataFlavor, View} from '../lib/view'
+import {CustomContext} from '../types/context'
+import {items} from '../data/items'
+import {goToMainMenu, MainMenuCodec, MainView} from './main'
 
-const GoToItemCodec = new Codec<{ id: number }>({
+export const GoToItemCodec = new Codec<{ id: number }>({
   encode(data) {
     return `go-to-item-${data.id}`
   },
@@ -16,39 +18,6 @@ const GoToItemCodec = new Codec<{ id: number }>({
   },
 })
 export const goToItem = (id: number) => GoToItemCodec.encode({id})
-
-const MainMenuCodec = new ConstantCodec('main-menu')
-export const goToMainMenu = () => MainMenuCodec.encode()
-
-const items = [
-  'a',
-  'b',
-  'c',
-  'd',
-  'e',
-]
-
-export const MainView = new View<CustomContext>('main')
-MainView.render((ctx) => {
-  const answer = (...args: Parameters<typeof ctx['editMessageText']>) => ctx.callbackQuery ? ctx.editMessageText(...args) : ctx.reply(...args)
-  return answer('Main menu', {
-    parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard: [
-        ...items.map((item, i) => [{
-          text: `Go to item ${i}`,
-          callback_data: goToItem(i),
-        }]),
-        [{
-          text: `Go to item 999`,
-          callback_data: goToItem(999),
-        }],
-      ]
-    },
-  })
-})
-MainView.global.command('start', (ctx, next) => MainView.enter(ctx, next))
-MainView.codec(GoToItemCodec, (ctx, next) => ItemView.enter(ctx, next))
 
 export const ItemView = new View<CustomContext, DataFlavor<{ id: number }>>('item')
 ItemView.render((ctx) => {

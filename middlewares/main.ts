@@ -1,6 +1,8 @@
 import {Composer} from 'grammy'
 import {CustomContext} from '../types/context'
-import {ItemView, MainView} from '../view'
+import {MainView} from '../views/main'
+import {ItemView} from '../views/item'
+
 
 export const mainComposer = new Composer<CustomContext>()
 mainComposer.use(MainView, MainView.global)
