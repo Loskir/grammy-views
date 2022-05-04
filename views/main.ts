@@ -1,7 +1,8 @@
-import {ConstantCodec, View} from '../lib/view'
+import {View} from '../lib/view'
 import {CustomContext} from '../types/context'
 import {items} from '../data/items'
 import {goToItem, GoToItemCodec, ItemView} from './item'
+import {ConstantCodec} from '../lib/codec'
 
 export const MainView = new View<CustomContext>('main')
 MainView.render((ctx) => {

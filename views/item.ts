@@ -1,7 +1,8 @@
-import {Codec, DataFlavor, View} from '../lib/view'
+import {DataFlavor, View} from '../lib/view'
 import {CustomContext} from '../types/context'
 import {items} from '../data/items'
 import {goToMainMenu, MainMenuCodec, MainView} from './main'
+import {Codec} from '../lib/codec'
 
 export const GoToItemCodec = new Codec<{ id: number }>({
   encode(data) {
