@@ -53,5 +53,4 @@ ItemView.render((ctx) => {
     },
   })
 })
-// this should be a global handler, but .global does not have .codec method yet
-ItemView.codec(GoToItemCodec, (ctx, next) => ItemView.enter(ctx, next))
+ItemView.global.on('callback_query:data').filter(GoToItemCodec.filter, (ctx, next) => ItemView.enter(ctx, next))

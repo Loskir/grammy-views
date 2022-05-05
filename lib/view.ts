@@ -1,5 +1,4 @@
-import {MiddlewareFn, Context, Composer, NextFunction, Filter} from 'grammy'
-import {Codec} from './codec'
+import {MiddlewareFn, Context, Composer, NextFunction} from 'grammy'
 
 export type DataFlavor<T> = { data: T }
 
@@ -21,12 +20,6 @@ export class View<C extends Context = Context, Flavor = {}> extends Composer<C> 
 
   enter(ctx: C & Flavor, next: NextFunction) {
     return this.renderComposer.middleware()(ctx, next)
-  }
-
-  codec<T>(codec: Codec<T>, ...middlewares: MiddlewareFn<Filter<C, 'callback_query:data'> & DataFlavor<T>>[]): Composer<Filter<C, 'callback_query:data'> & DataFlavor<T>> {
-    return this
-      .on('callback_query:data')
-      .filter(codec.filter, ...middlewares)
   }
 }
 
