@@ -28,5 +28,4 @@ MainView.global.command('start', (ctx, next) => MainView.enter(ctx, next))
 export const MainMenuCodec = new ConstantCodec('main-menu')
 export const goToMainMenu = () => MainMenuCodec.encode()
 
-// this should be a global handler, but .global does not have .codec method yet
 MainView.global.on('callback_query:data').filter(MainMenuCodec.filter, (ctx, next) => MainView.enter(ctx, next))
