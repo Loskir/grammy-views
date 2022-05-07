@@ -24,6 +24,7 @@ export class ViewController<C extends Context & { view: ViewContext<ViewContextF
   }
 
   register(...views: (View<C, any> | View<C, never>)[]) {
+    // todo make these handlers local
     this.use(...views)
     this.use(...views.map((v) => v.global))
   }
