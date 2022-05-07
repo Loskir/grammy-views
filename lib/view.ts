@@ -20,7 +20,6 @@ export class View<C extends Context = Context, State = never> extends Composer<C
 
   enter(ctx: C, ...params: State extends undefined ? [] : [data: State]) {
     const ctx2 = Object.assign(ctx, { data: params[0]! })
-    this.renderComposer.middleware.call
     return this.renderComposer.middleware()(ctx2, () => Promise.resolve())
   }
 }
