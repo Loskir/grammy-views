@@ -1,11 +1,11 @@
-import {MiddlewareFn, Context, Composer, NextFunction} from 'grammy'
+import { MiddlewareFn, Context, Composer } from 'grammy'
 
 export type DataFlavor<T> = { data: T }
 
 type MaybeArray<T> = T | T[]
 
-export class View<C extends Context = Context, Flavor = {}> extends Composer<C> {
-  private renderComposer: Composer<C & Flavor>
+export class View<C extends Context = Context, State = never> extends Composer<C> {
+  private renderComposer: Composer<C & DataFlavor<State>>
   public global: Composer<C>
 
   constructor(public name: string) {
@@ -14,12 +14,14 @@ export class View<C extends Context = Context, Flavor = {}> extends Composer<C> 
     this.global = new Composer()
   }
 
-  render(...fn: MiddlewareFn<C & Flavor>[]) {
+  render(...fn: MiddlewareFn<C & DataFlavor<State>>[]) {
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: C & Flavor, next: NextFunction) {
-    return this.renderComposer.middleware()(ctx, next)
+  enter(ctx: C, ...params: State extends undefined ? [] : [data: State]) {
+    const ctx2 = Object.assign(ctx, { data: params[0]! })
+    this.renderComposer.middleware.call
+    return this.renderComposer.middleware()(ctx2, () => Promise.resolve())
   }
 }
 

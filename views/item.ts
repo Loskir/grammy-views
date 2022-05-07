@@ -1,8 +1,8 @@
-import {DataFlavor, View} from '../lib/view'
-import {CustomContext} from '../types/context'
-import {items} from '../data/items'
-import {goToMainMenu} from './main'
-import {Codec} from '../lib/codec'
+import { DataFlavor, View } from '../lib/view'
+import { CustomContext } from '../types/context'
+import { items } from '../data/items'
+import { goToMainMenu } from './main'
+import { Codec } from '../lib/codec'
 
 export const GoToItemCodec = new Codec<{ id: number }>({
   encode(data) {
@@ -18,9 +18,9 @@ export const GoToItemCodec = new Codec<{ id: number }>({
     }
   },
 })
-export const goToItem = (id: number) => GoToItemCodec.encode({id})
+export const goToItem = (id: number) => GoToItemCodec.encode({ id })
 
-export const ItemView = new View<CustomContext, DataFlavor<{ id: number }>>('item')
+export const ItemView = new View<CustomContext, { id: number }>('item')
 ItemView.render((ctx) => {
   const item = items[ctx.data.id]
   if (!item) {
@@ -29,7 +29,7 @@ ItemView.render((ctx) => {
     })
   }
   const keyboard = [
-    [{text: 'Go to main menu', callback_data: goToMainMenu()}],
+    [{ text: 'Go to main menu', callback_data: goToMainMenu() }],
   ]
   const navigationRow = []
   if (ctx.data.id > 0) {
@@ -53,4 +53,4 @@ ItemView.render((ctx) => {
     },
   })
 })
-ItemView.global.on('callback_query:data').filter(GoToItemCodec.filter, (ctx, next) => ItemView.enter(ctx, next))
+ItemView.global.on('callback_query:data').filter(GoToItemCodec.filter, (ctx) => ctx.view.enter(ItemView, { id: ctx.codec.id }))
