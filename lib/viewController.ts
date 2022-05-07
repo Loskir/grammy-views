@@ -1,7 +1,7 @@
 import { Composer, Context, Middleware, MiddlewareFn } from "grammy"
 import { View } from "./view"
 
-export class ViewContext<C extends Context & { view: ViewContext<ViewContextFlavor<C>> }> {
+export class ViewContext<C extends Context & { view: ViewContext<C> }> {
   constructor(
     private readonly ctx: C,
   ) { }
@@ -15,7 +15,7 @@ export type ViewContextFlavor<C extends Context> = C & {
   view: ViewContext<ViewContextFlavor<C>>
 }
 
-export class ViewController<C extends Context & { view: ViewContext<ViewContextFlavor<C>> }> extends Composer<C> {
+export class ViewController<C extends Context & { view: ViewContext<C> }> extends Composer<C> {
   middleware(): MiddlewareFn<C> {
     return (ctx, next) => {
       ctx.view = new ViewContext(ctx)
