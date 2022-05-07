@@ -2,6 +2,8 @@ import { Composer, Context, Middleware, MiddlewareFn } from "grammy"
 import { View } from "./view"
 
 export class ViewContext<C extends Context & { view: ViewContext<C> }> {
+  public state: unknown
+  
   constructor(
     private readonly ctx: C,
   ) { }
