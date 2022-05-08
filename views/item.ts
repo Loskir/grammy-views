@@ -24,9 +24,10 @@ export const ItemView = new View<CustomContext, { id: number }>('item')
 ItemView.render((ctx) => {
   const item = items[ctx.view.state.id]
   if (!item) {
-    return ctx.answerCallbackQuery({
+    ctx.answerCallbackQuery({
       text: 'Item not found',
     })
+    return ctx.view.revert()
   }
   const keyboard = [
     [{ text: 'Show my session data', callback_data: 'state' }],

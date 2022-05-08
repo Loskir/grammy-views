@@ -11,6 +11,8 @@ export interface ViewSession {
 
 export type ViewStateFlavor<T> = { view: { state: T } }
 
+export type ViewRevertFlavor = { view: { revert(): unknown } }
+
 export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
   constructor(
     private readonly ctx: C,
@@ -39,10 +41,16 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }
-    const ctx = this.ctx as C & ViewStateFlavor<State>
+    const previousSession = JSON.parse(JSON.stringify(this.session))
+
+    const ctx = this.ctx as C & ViewStateFlavor<State> & ViewRevertFlavor
     ctx.view.session.current = view.name
     ctx.view.state = params[0]!
-  
+
+    ctx.view.revert = () => {
+      this.session = previousSession
+    }
+
     return view.enter(ctx)
   }
 }

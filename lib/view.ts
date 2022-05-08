@@ -1,11 +1,12 @@
 import { MiddlewareFn, Context, Composer } from 'grammy'
 import { run } from 'grammy/out/composer'
-import { ViewBaseContextFlavor, ViewStateFlavor } from './viewController'
+import { ViewBaseContextFlavor, ViewRevertFlavor, ViewStateFlavor } from './viewController'
 
 type MaybeArray<T> = T | T[]
 
+type RenderContextType<C, State> = C & ViewStateFlavor<State> & ViewRevertFlavor
 export class View<C extends Context & ViewBaseContextFlavor<C>, State = undefined> extends Composer<C & ViewStateFlavor<State>> {
-  private renderComposer: Composer<C & ViewStateFlavor<State>>
+  private renderComposer: Composer<RenderContextType<C, State>>
   public global: Composer<C>
 
   constructor(public name: string) {
@@ -14,11 +15,11 @@ export class View<C extends Context & ViewBaseContextFlavor<C>, State = undefine
     this.global = new Composer()
   }
 
-  render(...fn: MiddlewareFn<C & ViewStateFlavor<State>>[]) {
+  render(...fn: MiddlewareFn<RenderContextType<C, State>>[]) {
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: C & ViewStateFlavor<State>) {
+  enter(ctx: RenderContextType<C, State>) {
     return run(this.renderComposer.middleware(), ctx)
   }
 }
