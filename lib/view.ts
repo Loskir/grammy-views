@@ -8,7 +8,7 @@ type RenderContextType<C, State> = C & ViewStateFlavor<State> & ViewRevertFlavor
 
 type RequiredKeys<T extends Record<string, any>> = NonNullable<{[key in keyof T]: undefined extends T[key] ? never : key}[keyof T]>
 
-export type NotDefaultState<S extends Record<string, any>, D extends Partial<S> = {}> = Omit<S, RequiredKeys<D>>
+export type NotDefaultState<S extends Record<string, any>, D extends Partial<S> = {}> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
 
 // todo: make defaultState optional only if DefaultState is not {}
 export class View<

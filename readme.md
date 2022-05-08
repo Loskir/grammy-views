@@ -4,7 +4,7 @@ This is an early prototype for Grammy Views — UI framework for [grammY](https:
 
 Library files are located under /lib.
 
-The rest of the files provide a sample bot featuring the library.
+The rest of the files provide a simple bot made using the library.
 
 The library includes:
 
@@ -17,13 +17,25 @@ The library includes:
 ### Inconsistency between entering the view directly and via codec util function
 
 ```ts
-View.render((ctx) =>
-  ctx.reply('View', {
-    reply_markup: new InlineKeyboard().text('Button', goToMainMenu()),
-  })
-)
+View.render((ctx) => ctx.reply('View', {
+  reply_markup: new InlineKeyboard().text('Button', goToMainMenu()),
+}))
 // but
 View.on(':text', async (ctx) => ctx.view.enter(MainView))
+```
+
+## There is no way to declare a local handler in the view that overrides a global handler
+
+That's how view controller middleware works: global handlers have higher priority than local.
+
+That makes sense: global commands like /start should have higher priority than local :text handlers, for example.
+
+But the opposite behavior can also be useful: for example, for overriding the same codec locally to be able to access the local state.
+
+```ts
+View.filter(SomeCodec, (ctx) => ctx.view.enter(OtherView, { data: ctx.codec, other_optional_data: ctx.view.state.data }))
+
+OtherView.global.filter(SomeCodec, (ctx) => ctx.view.enter(OtherView, { data: ctx.codec }))
 ```
 
 ## Codec
