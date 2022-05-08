@@ -1,9 +1,8 @@
-import {View} from '../lib/view'
-import {CustomContext} from '../types/context'
-import {items} from '../data/items'
-import {goToItem} from './item'
-import {ConstantCodec} from '../lib/codec'
+import { View } from '../lib/view'
+import { CustomContext } from '../types/context'
+import { ConstantCodec } from '../lib/codec'
 import { goToCreateItem } from './createItem'
+import { goToItemList } from './itemList'
 
 export const MainView = new View<CustomContext>('main')
 MainView.render((ctx) => {
@@ -16,13 +15,9 @@ MainView.render((ctx) => {
           text: 'Create new item',
           callback_data: goToCreateItem(),
         }],
-        ...items.map((item, i) => [{
-          text: `Go to item ${i}`,
-          callback_data: goToItem(i),
-        }]),
         [{
-          text: 'Go to item 999',
-          callback_data: goToItem(999),
+          text: 'List of items',
+          callback_data: goToItemList(),
         }],
       ]
     },

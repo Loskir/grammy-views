@@ -9,6 +9,7 @@ import { MainView } from './views/main'
 import { ItemView } from './views/item'
 import { FileAdapter } from '@grammyjs/storage-file'
 import { CreateItemView } from './views/createItem'
+import { ItemListView } from './views/itemList'
 
 export function getBot() {
   const bot = new Bot<CustomContext>(config.token)
@@ -22,6 +23,7 @@ export function getBot() {
   const viewController = new ViewController<CustomContext>()
   viewController.register(
     MainView,
+    ItemListView,
     ItemView,
     CreateItemView,
   )

@@ -3,7 +3,8 @@ import { ConstantCodec } from "../lib/codec";
 import { View } from "../lib/view";
 import { CustomContext } from "../types/context";
 import { answer } from "../utils/answer";
-import { goToMainMenu, MainView } from "./main";
+import { ItemListView } from "./itemList";
+import { goToMainMenu } from "./main";
 
 const CreateItemCodec = new ConstantCodec('create-item')
 export const goToCreateItem = () => CreateItemCodec.encode()
@@ -19,6 +20,6 @@ CreateItemView.render((ctx) => {
 })
 CreateItemView.on(':text', async (ctx) => {
   const name = ctx.msg.text
-  await ctx.reply(`New item: ${name}`)
-  return ctx.view.enter(MainView)
+  await ctx.reply(`Item created: ${name}`)
+  return ctx.view.enter(ItemListView)
 })

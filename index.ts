@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import './utils/checkDotenv'
 
-import {getBot} from './bot'
+import { getBot } from './bot'
 
 void (async () => {
   const bot = getBot()

@@ -7,17 +7,21 @@ Library files are located under /lib.
 The rest of the files provide a sample bot featuring the library.
 
 The library includes:
+
 - Codec
 - View
 - ViewController
 
 ## Known issues
+
 ### Inconsistency between entering the view directly and via codec util function
 
 ```ts
-View.render((ctx) => ctx.reply('View', {
-  reply_markup: new InlineKeyboard().text('Button', goToMainMenu()),
-}))
+View.render((ctx) =>
+  ctx.reply('View', {
+    reply_markup: new InlineKeyboard().text('Button', goToMainMenu()),
+  })
+)
 // but
 View.on(':text', async (ctx) => ctx.view.enter(MainView))
 ```
