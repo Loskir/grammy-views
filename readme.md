@@ -12,6 +12,102 @@ The library includes:
 - View
 - ViewController
 
+## Documentation
+
+### Codec
+
+An abstraction over encoding and decoding callback data.
+
+Example:
+
+```ts
+const SomeCodec = new Codec<{name: string}>({
+  encode(data) {
+    // this function encodes the data to string
+    return `some-codec-${data.name}`
+  }
+  decode(s) {
+    // this function matches and decodes the string back to the data structure
+    // if there's no match, it retuns null
+    const match = s.match(/^some-codec-(.+)$/)
+    if (!match) return null
+    return { name: match[1] }
+  }
+})
+```
+
+`ConstantCodec` is a shortcut for encoding data that has no dynamic parameters. 
+
+Example: 
+
+```ts
+const SomeCodec = new ConstantCodec('some-codec')
+```
+
+Codes are useful for unifying interfaces of transitions between states. Instead of specifying strings in different parts of the program, codecs allow you to define an interface in one place and use it everywhere.
+
+To use a codec inside callback button, you can call `.encode` method directly
+
+```ts
+bot.use((ctx) => ctx.reply('Codec', {
+  reply_markup: new InlineKeyboard().text('Button', SomeCodec.encode(data)),
+}))
+```
+
+or create and export a helper function
+
+```ts
+export const goToSomewhere(data: string) => SomeCodec.encode(data)
+bot.use((ctx) => ctx.reply('Codec', {
+  reply_markup: new InlineKeyboard().text('Button', goToSomewhere(data)),
+}))
+```
+
+To handle a codec, you can use `.filter` method:
+
+```ts
+bot.filter(SomeCodec.filter, (ctx) => ctx.reply(ctx.codec.toString()))
+```
+
+Decoded data is available via `ctx.codec`.
+
+> Side note. Q: What's the difference between a constant codec and a string? A: I don't know :D
+
+### View
+
+A class that represents an isolated stage of the interface with its own view (`render` function) and handlers (local of global). (Similar to BaseScene in Telegraf)
+
+```ts
+const SomeView = new View('some-view')
+```
+
+Each view must have a unique name.
+
+View has 3 generic arguments: `Context`, `State`, `DefaultState`
+
+#### Render functions
+
+Each view can have a render function. It's called when the view is entered. Its purpose is to _render_ the view. Usually it's done via editing a message or by sending a new one. Render functions are set via `.render` method. Several functions can be chained (like a composer)
+
+```ts
+const SomeView = new View('some-view')
+SomeView.render((ctx) => ctx.reply('Hello from some view!'))
+```
+
+#### Entering a view
+
+TODO
+
+#### State
+
+View can have a state. It's used for both external data (like props) and internal data.
+
+
+### ViewController
+
+A class that provides `ctx.view` property in the context and manages all the activities involving views. (Similar to Stage in Telegraf)
+
+
 ## Known issues
 
 ### Inconsistency between entering the view directly and via codec util function
@@ -37,15 +133,3 @@ View.filter(SomeCodec, (ctx) => ctx.view.enter(OtherView, { data: ctx.codec, oth
 
 OtherView.global.filter(SomeCodec, (ctx) => ctx.view.enter(OtherView, { data: ctx.codec }))
 ```
-
-## Codec
-
-An abstraction over encoding and decoding callback data.
-
-## View
-
-A class that represents an isolated stage of the interface with its own view (`render` function) and handlers (local of global). (Similar to BaseScene in Telegraf)
-
-## ViewController
-
-A class that provides `ctx.view` property in the context and manages all the activities involving views. (Similar to Stage in Telegraf)
