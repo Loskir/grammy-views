@@ -12,6 +12,7 @@
     "watch-js": "nodemon dist/index.js --config nodemon.json"
   },
   "dependencies": {
+    "@grammyjs/storage-file": "^2.0.0",
     "@satont/grammy-mongodb-storage": "^1.0.1",
     "dotenv": "^10.0.0",
     "grammy": "^1.8.2"

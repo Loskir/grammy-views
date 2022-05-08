@@ -1,5 +1,4 @@
 import { Context, Filter } from 'grammy'
-import { ViewStateFlavor } from './view'
 
 export type CodecMatchFlavor<T> = { codec: T }
 

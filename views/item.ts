@@ -29,7 +29,7 @@ ItemView.render((ctx) => {
     })
   }
   const keyboard = [
-    [{ text: 'Go to main menu', callback_data: goToMainMenu() }],
+    [{ text: 'Show my session data', callback_data: 'state' }],
   ]
   const navigationRow = []
   if (ctx.view.state.id > 0) {
@@ -45,6 +45,7 @@ ItemView.render((ctx) => {
     })
   }
   keyboard.push(navigationRow)
+  keyboard.push([{ text: 'Go to main menu', callback_data: goToMainMenu() }])
   const answer = (...args: Parameters<typeof ctx['editMessageText']>) => ctx.callbackQuery ? ctx.editMessageText(...args) : ctx.reply(...args)
   return answer(`Item ${item} (${ctx.view.state.id})`, {
     parse_mode: 'HTML',
@@ -54,3 +55,4 @@ ItemView.render((ctx) => {
   })
 })
 ItemView.global.on('callback_query:data').filter(GoToItemCodec.filter, (ctx) => ctx.view.enter(ItemView, { id: ctx.codec.id }))
+ItemView.callbackQuery('state', (ctx) => ctx.answerCallbackQuery({ text: JSON.stringify(ctx.view.session), show_alert: true }))

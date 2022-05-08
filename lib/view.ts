@@ -1,11 +1,10 @@
 import { MiddlewareFn, Context, Composer } from 'grammy'
-import { ViewContext } from './viewController'
-
-export type ViewStateFlavor<T> = { view: { state: T } }
+import { run } from 'grammy/out/composer'
+import { ViewBaseContextFlavor, ViewStateFlavor } from './viewController'
 
 type MaybeArray<T> = T | T[]
 
-export class View<C extends Context & { view: ViewContext<C> }, State = never> extends Composer<C> {
+export class View<C extends Context & ViewBaseContextFlavor<C>, State = undefined> extends Composer<C & ViewStateFlavor<State>> {
   private renderComposer: Composer<C & ViewStateFlavor<State>>
   public global: Composer<C>
 
@@ -19,10 +18,8 @@ export class View<C extends Context & { view: ViewContext<C> }, State = never> e
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: C, ...params: State extends undefined ? [] : [data: State]) {
-    const ctx2 = ctx as C & ViewStateFlavor<State>
-    ctx2.view.state = params[0]!
-    return this.renderComposer.middleware()(ctx2, () => Promise.resolve())
+  enter(ctx: C & ViewStateFlavor<State>) {
+    return run(this.renderComposer.middleware(), ctx)
   }
 }
 

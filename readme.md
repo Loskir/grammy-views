@@ -11,6 +11,17 @@ The library includes:
 - View
 - ViewController
 
+## Known issues
+### Inconsistency between entering the view directly and via codec util function
+
+```ts
+View.render((ctx) => ctx.reply('View', {
+  reply_markup: new InlineKeyboard().text('Button', goToMainMenu()),
+}))
+// but
+View.on(':text', async (ctx) => ctx.view.enter(MainView))
+```
+
 ## Codec
 
 An abstraction over encoding and decoding callback data.

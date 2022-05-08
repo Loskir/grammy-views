@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@grammyjs/storage-file@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@grammyjs/storage-file/-/storage-file-2.0.0.tgz#6dde10bbe460785a19046c30538a23930242c8fb"
+  integrity sha512-IXkEt5w9bnWbzNmculc1v273rpVLe9glFyWWFMxEV26gLwQnW1JUEms4aSGT8ra+9SVMa/uvJT9wDBwczsJuvQ==
+
 "@grammyjs/types@^2.7.0":
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/@grammyjs/types/-/types-2.7.1.tgz#4071979d37bf37418ff07aeb25942e77d67e7b96"

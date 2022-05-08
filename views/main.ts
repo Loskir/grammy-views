@@ -3,6 +3,7 @@ import {CustomContext} from '../types/context'
 import {items} from '../data/items'
 import {goToItem} from './item'
 import {ConstantCodec} from '../lib/codec'
+import { goToCreateItem } from './createItem'
 
 export const MainView = new View<CustomContext>('main')
 MainView.render((ctx) => {
@@ -11,12 +12,16 @@ MainView.render((ctx) => {
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
+        [{
+          text: 'Create new item',
+          callback_data: goToCreateItem(),
+        }],
         ...items.map((item, i) => [{
           text: `Go to item ${i}`,
           callback_data: goToItem(i),
         }]),
         [{
-          text: `Go to item 999`,
+          text: 'Go to item 999',
           callback_data: goToItem(999),
         }],
       ]
