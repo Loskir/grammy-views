@@ -1,9 +1,7 @@
-import { items } from "../data/items";
 import { ConstantCodec } from "../lib/codec";
 import { View } from "../lib/view";
 import { CustomContext } from "../types/context";
 import { answer } from "../utils/answer";
-import { goToCreateItem } from "./createItem";
 import { goToItem } from "./item";
 import { goToMainMenu } from "./main";
 
@@ -18,14 +16,10 @@ ItemListView.render((ctx) => {
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
-        ...items.map((item, i) => [{
-          text: `Go to item ${i}`,
+        ...ctx.session.items.slice().reverse().map((item, i) => [{
+          text: `Go to item ${item}`,
           callback_data: goToItem(i),
         }]),
-        [{
-          text: 'Go to item 999',
-          callback_data: goToItem(999),
-        }],
         [{
           text: 'Back',
           callback_data: goToMainMenu(),

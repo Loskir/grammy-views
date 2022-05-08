@@ -16,7 +16,7 @@ export function getBot() {
 
   bot.use(callbackQuery)
   bot.use(session({
-    initial: () => ({ __views: { current: '', state: undefined } }),
+    initial: () => ({ __views: { current: '', state: undefined }, items: [] }),
     storage: new FileAdapter({ dirName: 'sessions' }),
   }))
 

@@ -3,6 +3,7 @@ import { ConstantCodec } from "../lib/codec";
 import { View } from "../lib/view";
 import { CustomContext } from "../types/context";
 import { answer } from "../utils/answer";
+import { ItemView } from "./item";
 import { ItemListView } from "./itemList";
 import { goToMainMenu } from "./main";
 
@@ -20,6 +21,9 @@ CreateItemView.render((ctx) => {
 })
 CreateItemView.on(':text', async (ctx) => {
   const name = ctx.msg.text
-  await ctx.reply(`Item created: ${name}`)
-  return ctx.view.enter(ItemListView)
+  if (name.length > 20) {
+    return ctx.reply('Name must be shorter than 20 characters')
+  }
+  ctx.session.items.push(name)
+  return ctx.view.enter(ItemView, {id: ctx.session.items.length - 1})
 })

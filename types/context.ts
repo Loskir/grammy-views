@@ -1,4 +1,6 @@
-import type {Context} from 'grammy'
+import type {Context, SessionFlavor} from 'grammy'
 import { ViewContextFlavor } from '../lib/viewController'
 
-export type CustomContext = ViewContextFlavor<Context>
+export type CustomContext = ViewContextFlavor<Context & SessionFlavor<{
+  items: string[]
+}>>
