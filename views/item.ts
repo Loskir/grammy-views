@@ -54,5 +54,5 @@ ItemView.render((ctx) => {
     },
   })
 })
-ItemView.global.on('callback_query:data').filter(GoToItemCodec.filter, (ctx) => ctx.view.enter(ItemView, { id: ctx.codec.id }))
+ItemView.global.filter(GoToItemCodec.filter, (ctx) => ctx.view.enter(ItemView, { id: ctx.codec.id }))
 ItemView.callbackQuery('state', (ctx) => ctx.answerCallbackQuery({ text: JSON.stringify(ctx.view.session), show_alert: true }))

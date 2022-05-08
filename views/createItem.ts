@@ -10,7 +10,7 @@ export const goToCreateItem = () => CreateItemCodec.encode()
 
 export const CreateItemView = new View<CustomContext>('create-item')
 
-CreateItemView.global.on('callback_query:data').filter(CreateItemCodec.filter, (ctx) => ctx.view.enter(CreateItemView))
+CreateItemView.global.filter(CreateItemCodec.filter, (ctx) => ctx.view.enter(CreateItemView))
 
 CreateItemView.render((ctx) => {
   return answer(ctx)('Send me the name', {

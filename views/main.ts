@@ -33,4 +33,4 @@ MainView.global.command('start', (ctx) => ctx.view.enter(MainView))
 export const MainMenuCodec = new ConstantCodec('main-menu')
 export const goToMainMenu = () => MainMenuCodec.encode()
 
-MainView.global.on('callback_query:data').filter(MainMenuCodec.filter, (ctx) => ctx.view.enter(MainView))
+MainView.global.filter(MainMenuCodec.filter, (ctx) => ctx.view.enter(MainView))
