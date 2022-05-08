@@ -12,11 +12,6 @@
   resolved "https://registry.yarnpkg.com/@grammyjs/types/-/types-2.7.1.tgz#4071979d37bf37418ff07aeb25942e77d67e7b96"
   integrity sha512-6U6yeEXueDX82tf2JmCBo+MRpH6xMW3hieZS30LFfSiBonqOlQUVbwtIwqC47KZn28oD9eccORCj0dugmu5uAg==
 
-"@satont/grammy-mongodb-storage@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@satont/grammy-mongodb-storage/-/grammy-mongodb-storage-1.0.1.tgz#6c0d05b508892d94d148a75cca795968e434c25d"
-  integrity sha512-ZNkMpVFOzVuYSn6zn/55EHFE6OTtt1kmgUxEm3iH8kJmfm8dVT/blMySfrkuFIDW2qdYDjEh7CkPkDKVfkTnLg==
-
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
