@@ -38,7 +38,7 @@ CartView.render((ctx) => {
   const pageNumber = ctx.view.state.page
   const startIndex = pageNumber * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
-  const items = sliceBack(ctx.session.cart, startIndex, endIndex)
+  const itemsEntries = sliceBack(ctx.session.cart.map((item, i) => [i, item] as const), startIndex, endIndex)
 
   const paginationRow = []
 
@@ -62,7 +62,7 @@ CartView.render((ctx) => {
     parse_mode: 'HTML',
     reply_markup: {
       inline_keyboard: [
-        ...items.map((item, i) => [{
+        ...itemsEntries.map(([i, item]) => [{
           text: item.created_at.toString(),
           callback_data: goToItem(i),
         }]),
