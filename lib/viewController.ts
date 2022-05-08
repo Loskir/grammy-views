@@ -1,5 +1,6 @@
 import { Composer, Context, Middleware, MiddlewareFn, SessionFlavor } from "grammy"
 import { View } from "./view"
+import { NotDefaultState } from "./view"
 
 export interface ViewSessionData {
   current: string
@@ -27,7 +28,7 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
   }
 
   get state(): unknown {
-    return this.session.state
+    return this.session.state || {}
   }
   set state(data) {
     this.session.state = data
@@ -37,7 +38,7 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     return this.views.get(this.session.current)
   }
 
-  async enter<State>(view: View<C, State>, ...params: State extends undefined ? [] : [data: State]) {
+  async enter<State, D extends Partial<State>>(view: View<C, State, D>, ...params: {} extends NotDefaultState<State, D> ? [data?: NotDefaultState<State, D>] : [data: NotDefaultState<State, D>]) {
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }
@@ -45,13 +46,19 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
 
     const ctx = this.ctx as C & ViewStateFlavor<State> & ViewRevertFlavor
     ctx.view.session.current = view.name
-    ctx.view.state = params[0]!
+    ctx.view.state = view.enrichState(params[0]!)
 
     ctx.view.revert = () => {
       this.session = previousSession
     }
 
     return view.enter(ctx)
+  }
+
+  render() {
+    // we know that current context is compatible with current view
+    // @ts-ignore
+    return this.current?.enter(this.ctx)
   }
 }
 
