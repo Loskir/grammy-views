@@ -15,14 +15,16 @@ export class View<
   > extends Composer<C & ViewStateFlavor<Props & State>> {
   private renderComposer: Composer<RenderContextType<C, Props & State>>
   public global: Composer<C>
+  public override: Composer<C>
 
   constructor(
     public name: string,
-    public state?: () => State,
+    private state?: () => State,
   ) {
     super()
     this.renderComposer = new Composer()
     this.global = new Composer()
+    this.override = new Composer()
   }
 
   render(...fn: MiddlewareFn<RenderContextType<C, Props & State>>[]) {

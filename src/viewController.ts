@@ -73,13 +73,12 @@ export class ViewController<C extends Context & ViewBaseContextFlavor<C>> extend
 
   middleware(): MiddlewareFn<C> {
     const composer = new Composer<C>()
-    composer.use(
-      (ctx, next) => {
-        ctx.view = new ViewContext(ctx, this.views)
-        return next()
-      },
-      super.middleware(),
-    )
+    composer.use((ctx, next) => {
+      ctx.view = new ViewContext(ctx, this.views)
+      return next()
+    })
+    composer.lazy((ctx) => ctx.view.current?.override ?? ((_, next) => next()))
+    composer.use(super.middleware())
     composer.lazy((ctx) => ctx.view.current ?? ((_, next) => next()))
     return composer.middleware()
   }
