@@ -5,21 +5,23 @@ type MaybeArray<T> = T | T[]
 
 type RenderContextType<C, State> = C & ViewStateFlavor<State> & ViewRevertFlavor
 
-type RequiredKeys<T extends Record<string, any>> = NonNullable<{[key in keyof T]: undefined extends T[key] ? never : key}[keyof T]>
+type RequiredKeys<T extends Record<string, any>> = NonNullable<{ [key in keyof T]: undefined extends T[key] ? never : key }[keyof T]>
+
+export type NotDefaultState<S extends Record<string, any>, D extends Partial<S> = {}> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
 
 // todo: make state optional only if State is not {}
 export class View<
   C extends Context & ViewBaseContextFlavor<C>,
-  Props extends Record<string, any> = Record<never, never>,
   State extends Record<string, any> = Record<never, never>,
-  > extends Composer<C & ViewStateFlavor<Props & State>> {
-  private renderComposer: Composer<RenderContextType<C, Props & State>>
+  DefaultState extends Partial<State> = Record<never, never>,
+  > extends Composer<C & ViewStateFlavor<State>> {
+  private renderComposer: Composer<RenderContextType<C, State>>
   public global: Composer<C>
   public override: Composer<C>
 
   constructor(
     public name: string,
-    private state?: () => State,
+    private defaultState: () => DefaultState,
   ) {
     super()
     this.renderComposer = new Composer()
@@ -27,21 +29,38 @@ export class View<
     this.override = new Composer()
   }
 
-  render(...fn: MiddlewareFn<RenderContextType<C, Props & State>>[]) {
+  render(...fn: MiddlewareFn<RenderContextType<C, State>>[]) {
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: RenderContextType<C, Props & State>) {
+  enter(ctx: RenderContextType<C, State>) {
     return run(this.renderComposer.middleware(), ctx)
   }
 
-  combineStateAndProps(input: Props & Partial<State>): Props & State {
+  applyDefaultState(input: NotDefaultState<State, DefaultState>): State {
     // nothing can go wrong riiiiiight?
-    return Object.assign({}, this.state ? this.state() : {}, input) as Props & State
+    // fixme
+    return Object.assign({}, this.defaultState(), input) as State
+  }
+
+  setDefaultState<D extends Partial<State>>(defaultState: () => D): View<C, State, D> {
+    return new View<C, State, D>(
+      this.name,
+      defaultState,
+    )
   }
 }
 
 export type GenericView<C extends Context & ViewBaseContextFlavor<C>> = View<C, any, any>
+
+export function createView<
+  C extends Context & ViewBaseContextFlavor<C>,
+  State extends Record<string, any> = Record<never, never>,
+  >(
+    name: string,
+) {
+  return new View<C, State, Record<never, never>>(name, () => ({}))
+}
 
 // class A {
 //   a(): {a: string} {
