@@ -41,6 +41,8 @@ export class View<
   }
 }
 
+export type GenericView<C extends Context & ViewBaseContextFlavor<C>> = View<C, any, any>
+
 // class A {
 //   a(): {a: string} {
 //     console.log('A')

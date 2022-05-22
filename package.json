@@ -1,8 +1,16 @@
 {
   "name": "@loskir/grammy-views",
+  "author": "Kirill Loskutov",
   "version": "0.1.0",
-  "main": "dist/mod.js",
+  "main": "./out/mod.js",
   "license": "MIT",
+  "type": "commonjs",
+  "files": [
+    "out/"
+  ],
+  "exports": {
+    ".": "./out/mod.js"
+  },
   "scripts": {
     "build": "deno2node tsconfig.json",
     "publish:npm": "npm publish --access=public"
