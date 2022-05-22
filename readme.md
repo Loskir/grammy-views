@@ -104,7 +104,7 @@ const SomeView = createView('some-view')
 
 Each view must have a unique name.
 
-#### Render functions
+### Render functions
 
 Each view can have a render function. 
 It's called when the view is entered. 
@@ -118,7 +118,7 @@ const SomeView = createView('some-view')
 SomeView.render((ctx) => ctx.reply('Hello from some view!'))
 ```
 
-#### Entering a view
+### Entering a view
 
 ```ts
 import { SomeView } from './someView'
@@ -126,12 +126,14 @@ import { SomeView } from './someView'
 bot.command('enter', (ctx) => ctx.view.enter(SomeView))
 ```
 
-#### Handling updates
+### Handling updates
 
 There are 3 ways to handle updates on the view:
 - Local handlers
 - Global handlers
 - Override handlers
+
+#### Local handlers
 
 Local handlers are defined the same way as with `Composer` and only work when the user is inside this view.
 
@@ -151,6 +153,8 @@ bot.command('enter', (ctx) => ctx.view.enter(SomeView))
 < hello!
 ```
 
+#### Global handlers
+
 Global handlers are defined using `.global` prefix and work both inside and outside the view.
 They are useful for defining global entrypoints for the view.
 
@@ -163,6 +167,8 @@ SomeView.global.command('enter_some_view', (ctx) => ctx.view.enter(SomeView))
 > /enter_some_view
 < // now we are inside the view, even if we were in different view before
 ```
+
+#### Override handlers
 
 Override handlers are defined using `.override` prefix and only work inside the view.
 They have the highest priority of all three ways.
@@ -189,7 +195,7 @@ SomeOtherView.command('enter_some_view', (ctx) => {
 ```
 
 
-#### State
+### State
 
 View can have state. 
 It's used for both external data (like props) and internal data.
@@ -245,13 +251,13 @@ It can be accessed via `ctx.view.state` in render middleware, local handlers and
 ```ts
 const SomeView = createView<Context, {a: string}>('some-view')
 SomeView.render((ctx) => {
-  ctx.reply(ctx.view.state.a) // ✅
+  return ctx.reply(ctx.view.state.a) // ✅
 })
 SomeView.callbackQuery('a', (ctx) => {
-  ctx.answerCallbackQuery(ctx.view.state.a) // ✅
+  return ctx.answerCallbackQuery(ctx.view.state.a) // ✅
 })
 SomeView.override.callbackQuery('a', (ctx) => {
-  ctx.answerCallbackQuery(ctx.view.state.a) // ✅
+  return ctx.answerCallbackQuery(ctx.view.state.a) // ✅
 })
 SomeView.global.callbackQuery('a', (ctx) => {
   // ❌ no state here
@@ -275,17 +281,3 @@ View.render((ctx) => ctx.reply('View', {
 // but
 View.on(':text', async (ctx) => ctx.view.enter(MainView))
 ``` -->
-
-## There is no way to declare a local handler in the view that overrides a global handler
-
-That's how view controller middleware works: global handlers have higher priority than local.
-
-That makes sense: global commands like /start should have higher priority than local :text handlers, for example.
-
-But the opposite behavior can also be useful: for example, for overriding the same codec locally to be able to access the local state.
-
-```ts
-View.filter(SomeCodec, (ctx) => ctx.view.enter(OtherView, { data: ctx.codec, other_optional_data: ctx.view.state.data }))
-
-OtherView.global.filter(SomeCodec, (ctx) => ctx.view.enter(OtherView, { data: ctx.codec }))
-```
