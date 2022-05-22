@@ -99,7 +99,7 @@ Decoded data is available via `ctx.codec`.
 A class that represents an isolated stage of the interface with its own view (`render` function) and handlers (local of global). (Similar to BaseScene in Telegraf)
 
 ```ts
-const SomeView = new View('some-view')
+const SomeView = createView('some-view')
 ```
 
 Each view must have a unique name.
@@ -108,20 +108,151 @@ View has 3 generic arguments: `Context`, `State`, `DefaultState`
 
 #### Render functions
 
-Each view can have a render function. It's called when the view is entered. Its purpose is to _render_ the view. Usually it's done via editing a message or by sending a new one. Render functions are set via `.render` method. Several functions can be chained (like a composer)
+Each view can have a render function. 
+It's called when the view is entered. 
+Its purpose is to _render_ the view. 
+Usually it's done via editing a message or by sending a new one. 
+Render functions are set via `.render` method. 
+Several render middlewares can be applied.
 
 ```ts
-const SomeView = new View('some-view')
+const SomeView = createView('some-view')
 SomeView.render((ctx) => ctx.reply('Hello from some view!'))
 ```
 
 #### Entering a view
 
-TODO
+```ts
+import { SomeView } from './someView'
+
+bot.command('enter', (ctx) => ctx.view.enter(SomeView))
+```
+
+#### Handling updates
+
+There are 3 ways to handle updates on the view:
+- Local handlers
+- Global handlers
+- Override handlers
+
+Local handlers are defined the same way as with `Composer` and only work when the user is inside this view.
+
+```ts
+const SomeView = createView('some-view')
+SomeView.command('test', (ctx) => ctx.reply('hello!'))
+
+bot.command('enter', (ctx) => ctx.view.enter(SomeView))
+```
+
+```
+> /test
+< // nothing
+> /enter
+< // now we are inside the view
+> /test
+< hello!
+```
+
+Global handlers are defined using `.global` prefix and work both inside and outside the view.
+They are useful for defining global entrypoints for the view.
+
+```ts
+const SomeView = createView('some-view')
+SomeView.global.command('enter_some_view', (ctx) => ctx.view.enter(SomeView))
+```
+
+```
+> /enter_some_view
+< // now we are inside the view, even if we were in different view before
+```
+
+Override handlers are defined using `.override` prefix and only work inside the view.
+They have the highest priority of all three ways.
+
+Override handlers > Global handlers > Local handlers.
+
+Override handlers are useful for overriding other global handlers to provide similar behavior, but with some state-dependent changes.
+
+```ts
+const SomeView = createView<{a: string}>('some-view')
+SomeView.global.command('enter_some_view', (ctx) => ctx.view.enter(SomeView, {a: 'we came from global handler'}))
+
+const SomeOtherView = createView('some-other-view')
+SomeOtherView.override.command('enter_some_view', (ctx) => ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'}))
+
+// ❌ this won't work because global handlers have higher priority than local ones
+SomeOtherView.command('enter_some_view', (ctx) => ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'}))
+```
+
 
 #### State
 
-View can have a state. It's used for both external data (like props) and internal data.
+View can have state. 
+It's used for both external data (like props) and internal data.
+It is defined via the second type parameter of `createView` function (the first is used to pass custom `Context` types).
+
+```ts
+const SomeView = createView<Context, {a: string}>('some-view')
+```
+
+When entering a stateful view, it is required to pass appropriate state.
+
+```ts
+bot.command('enter', (ctx) => ctx.view.enter(SomeView, {a: '123'}))
+```
+
+`ctx.view.enter` function is strictly typed, so you'll get compilation error if you forgot some properties or confuse the types.
+
+#### Default state
+
+To define a default state, you use `.setDefaultState` method.
+
+```ts
+const SomeView = createView<Context, {a: string}>('some-view')
+  .setDefaultState(() => ({a: 'default a'}))
+```
+
+You don't have to pass properties from default state on enter (but you still can override them if you want)
+
+```ts
+// ✅ both are correct
+bot.command('enter', (ctx) => ctx.view.enter(SomeView))
+bot.command('enter', (ctx) => ctx.view.enter(SomeView, {a: 'override'}))
+```
+
+Notice that `.setDefaultState` returns a new instance of `View`, so you can't call it on created instance.
+
+```ts
+// ✅ correct
+const SomeView = createView<Context, {a: string}>('some-view')
+  .setDefaultState(() => ({a: 'default a'}))
+```
+```ts
+// ❌ incorrect
+const SomeView = createView<Context, {a: string}>('some-view')
+SomeView.setDefaultState(() => ({a: 'default a'}))
+```
+
+#### Accessing the state
+
+View state is stored inside session an therefore is persisted between updates.
+It can be accessed via `ctx.view.state` in render middleware, local handlers and override handlers (but not in global handlers).
+
+```ts
+const SomeView = createView<Context, {a: string}>('some-view')
+SomeView.render((ctx) => {
+  ctx.reply(ctx.view.state.a) // ✅
+})
+SomeView.callbackQuery('a', (ctx) => {
+  ctx.answerCallbackQuery(ctx.view.state.a) // ✅
+})
+SomeView.override.callbackQuery('a', (ctx) => {
+  ctx.answerCallbackQuery(ctx.view.state.a) // ✅
+})
+SomeView.global.callbackQuery('a', (ctx) => {
+  // ❌ no state here
+})
+```
 
 
 ### ViewController
