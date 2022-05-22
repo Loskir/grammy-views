@@ -2,19 +2,19 @@
 
 This is an early prototype for Grammy Views — UI framework for [grammY](https://grammy.dev)
 
-Library files are located under /lib.
+## Motivation
 
-The rest of the files provide a simple bot made using the library.
+> TODO
 
 The library includes:
 
-- Codec
+<!-- - Codec -->
 - View
 - ViewController
 
 ## Documentation
 
-### Codec
+<!-- ### Codec
 
 An abstraction over encoding and decoding callback data.
 
@@ -71,7 +71,7 @@ bot.filter(SomeCodec.filter, (ctx) => ctx.reply(ctx.codec.toString()))
 
 Decoded data is available via `ctx.codec`.
 
-> Side note. Q: What's the difference between a constant codec and a string? A: I don't know :D
+> Side note. Q: What's the difference between a constant codec and a string? A: I don't know :D -->
 
 ### View
 
@@ -110,7 +110,7 @@ A class that provides `ctx.view` property in the context and manages all the act
 
 ## Known issues
 
-### Inconsistency between entering the view directly and via codec util function
+<!-- ### Inconsistency between entering the view directly and via codec util function
 
 ```ts
 View.render((ctx) => ctx.reply('View', {
@@ -118,7 +118,7 @@ View.render((ctx) => ctx.reply('View', {
 }))
 // but
 View.on(':text', async (ctx) => ctx.view.enter(MainView))
-```
+``` -->
 
 ## There is no way to declare a local handler in the view that overrides a global handler
 

@@ -1,0 +1,15 @@
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true
+    },
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.config": "./deno.json",
+    "deno.suggest.imports.hosts": {
+        "https://deno.land": true,
+        "https://x.nest.land": true,
+        "https://crux.land": true,
+        "https://lib.deno.dev": false
+    },
+}

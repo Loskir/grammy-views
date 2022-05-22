@@ -1,6 +1,5 @@
-import { Composer, Context, Middleware, MiddlewareFn, SessionFlavor } from "grammy"
-import { View } from "./view"
-import { NotDefaultState } from "./view"
+import { Composer, Context, Middleware, MiddlewareFn, SessionFlavor } from "./deps.deno.ts"
+import { View, NotDefaultState } from "./view.ts"
 
 export interface ViewSessionData {
   current: string
@@ -38,7 +37,7 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     return this.views.get(this.session.current)
   }
 
-  async enter<State, D extends Partial<State>>(view: View<C, State, D>, ...params: {} extends NotDefaultState<State, D> ? [data?: NotDefaultState<State, D>] : [data: NotDefaultState<State, D>]) {
+  enter<State, D extends Partial<State>>(view: View<C, State, D>, ...params: {} extends NotDefaultState<State, D> ? [data?: NotDefaultState<State, D>] : [data: NotDefaultState<State, D>]) {
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }
@@ -70,7 +69,7 @@ export type ViewBaseContextFlavor<C extends Context> = SessionFlavor<ViewSession
 export type ViewContextFlavor<C extends Context> = C & ViewBaseContextFlavor<C>
 
 export class ViewController<C extends Context & ViewBaseContextFlavor<C>> extends Composer<C> {
-  private views: Map<string, View<C, any>> = new Map()
+  private views: Map<string, View<C>> = new Map()
 
   middleware(): MiddlewareFn<C> {
     const composer = new Composer<C>()
@@ -85,7 +84,7 @@ export class ViewController<C extends Context & ViewBaseContextFlavor<C>> extend
     return composer.middleware()
   }
 
-  register(...views: View<C, any>[]) {
+  register(...views: View<C>[]) {
     for (const view of views) {
       if (this.views.has(view.name)) {
         throw new Error(`Duplicate view name: ${view.name}`)
