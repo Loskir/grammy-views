@@ -173,13 +173,19 @@ Override handlers are useful for overriding other global handlers to provide sim
 
 ```ts
 const SomeView = createView<{a: string}>('some-view')
-SomeView.global.command('enter_some_view', (ctx) => ctx.view.enter(SomeView, {a: 'we came from global handler'}))
+SomeView.global.command('enter_some_view', (ctx) => {
+  return ctx.view.enter(SomeView, {a: 'we came from global handler'})
+})
 
 const SomeOtherView = createView('some-other-view')
-SomeOtherView.override.command('enter_some_view', (ctx) => ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'}))
+SomeOtherView.override.command('enter_some_view', (ctx) => {
+  return ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'})
+})
 
 // ❌ this won't work because global handlers have higher priority than local ones
-SomeOtherView.command('enter_some_view', (ctx) => ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'}))
+SomeOtherView.command('enter_some_view', (ctx) => {
+  return ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'})
+})
 ```
 
 
