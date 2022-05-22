@@ -104,8 +104,6 @@ const SomeView = createView('some-view')
 
 Each view must have a unique name.
 
-View has 3 generic arguments: `Context`, `State`, `DefaultState`
-
 #### Render functions
 
 Each view can have a render function. 
