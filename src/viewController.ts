@@ -1,5 +1,5 @@
-import { Composer, Context, Middleware, MiddlewareFn, SessionFlavor } from "./deps.deno.ts"
-import { View, NotDefaultState, GenericView } from "./view.ts"
+import { Composer, Context, MiddlewareFn, SessionFlavor } from "./deps.deno.ts"
+import { View, GenericView } from "./view.ts"
 
 export interface ViewSessionData {
   current: string
@@ -37,15 +37,15 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     return this.views.get(this.session.current)
   }
 
-  enter<State, D extends Partial<State>>(view: View<C, State, D>, ...params: {} extends NotDefaultState<State, D> ? [data?: NotDefaultState<State, D>] : [data: NotDefaultState<State, D>]) {
+  enter<Props, State>(view: View<C, Props, State>, ...params: {} extends Props & Partial<State> ? [data?: Props & Partial<State>] : [data: Props & Partial<State>]) {
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }
     const previousSession = JSON.parse(JSON.stringify(this.session))
 
-    const ctx = this.ctx as C & ViewStateFlavor<State> & ViewRevertFlavor
+    const ctx = this.ctx as C & ViewStateFlavor<Props & State> & ViewRevertFlavor
     ctx.view.session.current = view.name
-    ctx.view.state = view.enrichState(params[0]!)
+    ctx.view.state = view.combineStateAndProps(params[0]!)
 
     ctx.view.revert = () => {
       this.session = previousSession

@@ -7,37 +7,35 @@ type RenderContextType<C, State> = C & ViewStateFlavor<State> & ViewRevertFlavor
 
 type RequiredKeys<T extends Record<string, any>> = NonNullable<{[key in keyof T]: undefined extends T[key] ? never : key}[keyof T]>
 
-export type NotDefaultState<S extends Record<string, any>, D extends Partial<S> = {}> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
-
-// todo: make defaultState optional only if DefaultState is not {}
+// todo: make state optional only if State is not {}
 export class View<
   C extends Context & ViewBaseContextFlavor<C>,
+  Props extends Record<string, any> = Record<never, never>,
   State extends Record<string, any> = Record<never, never>,
-  DefaultState extends Partial<State> = Record<never, never>,
-  > extends Composer<C & ViewStateFlavor<State>> {
-  private renderComposer: Composer<RenderContextType<C, State>>
+  > extends Composer<C & ViewStateFlavor<Props & State>> {
+  private renderComposer: Composer<RenderContextType<C, Props & State>>
   public global: Composer<C>
 
   constructor(
     public name: string,
-    public defaultState?: () => DefaultState,
+    public state?: () => State,
   ) {
     super()
     this.renderComposer = new Composer()
     this.global = new Composer()
   }
 
-  render(...fn: MiddlewareFn<RenderContextType<C, State>>[]) {
+  render(...fn: MiddlewareFn<RenderContextType<C, Props & State>>[]) {
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: RenderContextType<C, State>) {
+  enter(ctx: RenderContextType<C, Props & State>) {
     return run(this.renderComposer.middleware(), ctx)
   }
 
-  enrichState(state: NotDefaultState<State, DefaultState>): State {
+  combineStateAndProps(input: Props & Partial<State>): Props & State {
     // nothing can go wrong riiiiiight?
-    return Object.assign({}, this.defaultState ? this.defaultState() : {}, state) as State
+    return Object.assign({}, this.state ? this.state() : {}, input) as Props & State
   }
 }
 
