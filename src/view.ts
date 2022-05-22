@@ -11,7 +11,7 @@ export type NotDefaultState<S extends Record<string, any>, D extends Partial<S> 
 
 // todo: make state optional only if State is not {}
 export class View<
-  C extends Context & ViewBaseContextFlavor<C>,
+  C extends Context & ViewBaseContextFlavor<C> = Context & ViewBaseContextFlavor<Context>,
   State extends Record<string, any> = Record<never, never>,
   DefaultState extends Partial<State> = Record<never, never>,
   > extends Composer<C & ViewStateFlavor<State>> {
