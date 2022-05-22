@@ -29,12 +29,6 @@ The main difference is the type safety.
 
 ## Documentation
 
-The library includes:
-
-<!-- - Codec -->
-- View
-- ViewController
-
 <!-- ### Codec
 
 An abstraction over encoding and decoding callback data.
@@ -93,6 +87,13 @@ bot.filter(SomeCodec.filter, (ctx) => ctx.reply(ctx.codec.toString()))
 Decoded data is available via `ctx.codec`.
 
 > Side note. Q: What's the difference between a constant codec and a string? A: I don't know :D -->
+### [Context flavor](https://grammy.dev/guide/context.html#context-flavors)
+
+You have to use `ViewContextFlavor` on your context in order for the types to be complete.
+
+```ts
+export type CustomContext = ViewContextFlavor<Context>
+```
 
 ### View
 
@@ -269,8 +270,20 @@ SomeView.global.callbackQuery('a', (ctx) => {
 
 A class that provides `ctx.view` property in the context and manages all the activities involving views. (Similar to Stage in Telegraf)
 
+You have to `.use` it on your bot instance in order to be able to use `ctx.view` methods.
+You have to register your views in this controller in order for them to work.
 
-## Known issues
+```ts
+const viewController = new ViewController<CustomContext>()
+viewController.register(
+  MainView,
+  OtherView,
+)
+
+bot.use(viewController)
+```
+
+<!-- ## Known issues -->
 
 <!-- ### Inconsistency between entering the view directly and via codec util function
 
