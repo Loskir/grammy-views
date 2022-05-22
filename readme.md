@@ -18,6 +18,15 @@ Telegraf has Scenes, a similar abstraction which was the inspiration for this li
 Grammy Views uses almost the same concepts as Telegraf Scenes. 
 The main difference is the type safety.
 
+| Telegraf term           | Grammy Views term        | Description                                                                         |
+| ----------------------- | ------------------------ | ----------------------------------------------------------------------------------- |
+| Scene                   | View                     | Basic building block for the UI. Represents an isolated state with its own handlers |
+| Stage                   | ViewController           | Middleware that registers all views and provides context flavor                     |
+| ctx.scene               | ctx.view                 | Part of the context that is responsible for working with views/scenes               |
+| ctx.scene.session       | ctx.view.state           | Persistent storage that is bound to this view/scene                                 |
+| scene.enter             | view.render              | Middleware that is executed upon entering the view/scene                            |
+| ctx.scene.enter('name') | ctx.view.enter(SomeView) | Entering another view                                                               |
+
 ## Documentation
 
 The library includes:
