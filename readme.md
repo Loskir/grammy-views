@@ -2,17 +2,29 @@
 
 This is an early prototype for Grammy Views — UI framework for [grammY](https://grammy.dev)
 
-## Motivation
+Grammy Views is a UI framework for Telegram bots that provides abstractions for controlling UI states.
 
-> TODO
+## Comparison with other solutions
+
+### [grammY Router](https://grammy.dev/plugins/router.html)
+
+The Grammy Router is a basic implementation of the Finite State Machine, a concept for separating handlers into groups that are active only when the user is in a particular route.
+
+Grammy Views enables this behavior too, but provides higher-level abstractions (e.g. local states for each View). 
+
+### [Telegraf](https://telegraf.js.org) Scenes
+
+Telegraf has Scenes, a similar abstraction which was the inspiration for this library. 
+Grammy Views uses almost the same concepts as Telegraf Scenes. 
+The main difference is the type safety.
+
+## Documentation
 
 The library includes:
 
 <!-- - Codec -->
 - View
 - ViewController
-
-## Documentation
 
 <!-- ### Codec
 
