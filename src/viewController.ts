@@ -1,5 +1,5 @@
 import { Composer, Context, MiddlewareFn, SessionFlavor } from "./deps.deno.ts"
-import { View, GenericView, NotDefaultState } from "./view.ts"
+import { View, NotDefaultState } from "./view.ts"
 
 export interface ViewSessionData {
   current: string
@@ -16,7 +16,7 @@ export type ViewRevertFlavor = { view: { revert(): unknown } }
 export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
   constructor(
     private readonly ctx: C,
-    private readonly views: Map<string, View<C, any>>,
+    private readonly views: Map<string, View<C>>,
   ) { }
 
   get session(): ViewSessionData {
@@ -26,18 +26,18 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     this.ctx.session.__views = data
   }
 
-  get state(): unknown {
+  get state() {
     return this.session.state || {}
   }
   set state(data) {
     this.session.state = data
   }
 
-  get current(): View<C, any> | undefined {
+  get current(): View<C, Record<string, unknown>> | undefined {
     return this.views.get(this.session.current)
   }
 
-  enter<S, D extends Partial<S>>(view: View<C, S, D>, ...params: {} extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) {
+  enter<S extends Record<string, unknown>, D extends Partial<S>>(view: View<C, S, D>, ...params: Record<never, never> extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) {
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }
@@ -69,7 +69,7 @@ export type ViewBaseContextFlavor<C extends Context> = SessionFlavor<ViewSession
 export type ViewContextFlavor<C extends Context> = C & ViewBaseContextFlavor<C>
 
 export class ViewController<C extends Context & ViewBaseContextFlavor<C>> extends Composer<C> {
-  private views: Map<string, GenericView<C>> = new Map()
+  private views: Map<string, View<C>> = new Map()
 
   middleware(): MiddlewareFn<C> {
     const composer = new Composer<C>()
@@ -79,11 +79,12 @@ export class ViewController<C extends Context & ViewBaseContextFlavor<C>> extend
     })
     composer.lazy((ctx) => ctx.view.current?.override ?? ((_, next) => next()))
     composer.use(super.middleware())
+
     composer.lazy((ctx) => ctx.view.current ?? ((_, next) => next()))
     return composer.middleware()
   }
 
-  register(...views: GenericView<C>[]) {
+  register(...views: View<C>[]) {
     for (const view of views) {
       if (this.views.has(view.name)) {
         throw new Error(`Duplicate view name: ${view.name}`)
