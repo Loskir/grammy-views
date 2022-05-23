@@ -1,9 +1,5 @@
 import { MiddlewareFn, Context, Composer, run } from './deps.deno.ts'
-import { ViewBaseContextFlavor, ViewRevertFlavor, ViewStateFlavor } from './viewController.ts'
-
-type MaybeArray<T> = T | T[]
-
-type RenderContextType<C, State> = C & ViewStateFlavor<State> & ViewRevertFlavor
+import { ViewBaseContextFlavor, ViewStateFlavor } from './viewController.ts'
 
 type RequiredKeys<T extends Record<string, unknown>> = NonNullable<{ [key in keyof T]: undefined extends T[key] ? never : key }[keyof T]>
 
@@ -14,7 +10,7 @@ export class View<
   State extends Record<string, unknown> = Record<never, never>,
   DefaultState extends Partial<State> = Record<never, never>,
   > extends Composer<C & ViewStateFlavor<State>> {
-  private renderComposer: Composer<RenderContextType<C, State>>
+  private renderComposer: Composer<C & ViewStateFlavor<State>>
   public global: Composer<C>
   public override: Composer<C>
 
@@ -28,11 +24,11 @@ export class View<
     this.override = new Composer()
   }
 
-  render(...fn: MiddlewareFn<RenderContextType<C, State>>[]) {
+  render(...fn: MiddlewareFn<C & ViewStateFlavor<State>>[]) {
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: RenderContextType<C, State>) {
+  enter(ctx: C & ViewStateFlavor<State>) {
     return run(this.renderComposer.middleware(), ctx)
   }
 

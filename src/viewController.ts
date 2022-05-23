@@ -41,22 +41,16 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }
-    const previousSession = JSON.parse(JSON.stringify(this.session))
 
-    const ctx = this.ctx as C & ViewStateFlavor<S> & ViewRevertFlavor
+    const ctx = this.ctx as C & ViewStateFlavor<S>
     ctx.view.session.current = view.name
     ctx.view.state = view.applyDefaultState(params[0]!)
-
-    ctx.view.revert = () => {
-      this.session = previousSession
-    }
 
     return view.enter(ctx)
   }
 
   render() {
     // we know that current context is compatible with current view
-    // @ts-ignore
     return this.current?.enter(this.ctx)
   }
 }
