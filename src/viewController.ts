@@ -37,7 +37,9 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
     return this.views.get(this.session.current)
   }
 
-  enter<S, D extends Partial<S>>(view: View<C, S, D>, ...params: {} extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) {
+  enter<V extends GenericView<C>>(view: V, ...params: (V extends View<C, infer S, infer D> ? ({} extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) : never)) {
+    type S = V extends View<C, infer S> ? S : never
+
     if (!this.views.has(view.name)) {
       console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
     }

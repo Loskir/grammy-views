@@ -9,19 +9,19 @@ type RequiredKeys<T extends Record<string, any>> = NonNullable<{ [key in keyof T
 
 export type NotDefaultState<S extends Record<string, any>, D extends Partial<S> = {}> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
 
-// todo: make state optional only if State is not {}
 export class View<
   C extends Context & ViewBaseContextFlavor<C> = Context & ViewBaseContextFlavor<Context>,
   State extends Record<string, any> = Record<never, never>,
   DefaultState extends Partial<State> = Record<never, never>,
-  > extends Composer<C & ViewStateFlavor<State>> {
-  private renderComposer: Composer<RenderContextType<C, State>>
+  ExtraFlavor extends ViewStateFlavor<State> = ViewStateFlavor<State>,
+  > extends Composer<C & ExtraFlavor> {
+  protected renderComposer: Composer<C & ExtraFlavor & ViewRevertFlavor>
   public global: Composer<C>
   public override: Composer<C>
 
   constructor(
     public name: string,
-    private defaultState: () => DefaultState,
+    protected defaultState: () => DefaultState,
   ) {
     super()
     this.renderComposer = new Composer()
@@ -29,11 +29,60 @@ export class View<
     this.override = new Composer()
   }
 
-  render(...fn: MiddlewareFn<RenderContextType<C, State>>[]) {
+  render(...fn: MiddlewareFn<C & ExtraFlavor & ViewRevertFlavor>[]) {
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: RenderContextType<C, State>) {
+  enter(ctx: C & ExtraFlavor & ViewRevertFlavor) {
+    return run(this.renderComposer.middleware(), ctx)
+  }
+
+  applyDefaultState(input: NotDefaultState<State, DefaultState>): State {
+    // nothing can go wrong riiiiiight?
+    // fixme
+    return Object.assign({}, this.defaultState(), input) as State
+  }
+
+  setDefaultState<D extends Partial<State>>(defaultState: () => D): View<C, State, D> {
+    return new View<C, State, D>(
+      this.name,
+      defaultState,
+    )
+  }
+}
+
+export type PossibleTransitionsFlavor<C extends Context & ViewBaseContextFlavor<C>, V extends GenericView<C>> = {
+  view: {
+    enter2(view: V, ...params: V extends View<C, infer S, infer D> ? ({} extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) : never): Promise<void>
+  }
+}
+
+export class StrictView<
+  C extends Context & ViewBaseContextFlavor<C> = Context & ViewBaseContextFlavor<Context>,
+  State extends Record<string, any> = Record<never, never>,
+  DefaultState extends Partial<State> = Record<never, never>,
+  PossibleTransitions extends GenericView<C> = never,
+  ExtraFlavor extends ViewStateFlavor<State> & PossibleTransitionsFlavor<C, PossibleTransitions> = ViewStateFlavor<State> & PossibleTransitionsFlavor<C, PossibleTransitions>,
+  > extends View<C, State, DefaultState, ExtraFlavor> {
+  protected renderComposer: Composer<C & ExtraFlavor & ViewRevertFlavor>
+  public global: Composer<C>
+  public override: Composer<C>
+
+  constructor(
+    public name: string,
+    protected defaultState: () => DefaultState,
+  ) {
+    super(name, defaultState)
+    this.renderComposer = new Composer()
+    this.global = new Composer()
+    this.override = new Composer()
+  }
+
+  render(...fn: MiddlewareFn<C & ExtraFlavor & ViewRevertFlavor>[]) {
+    this.renderComposer.use(...fn)
+  }
+
+  enter(ctx: C & ExtraFlavor & ViewRevertFlavor) {
     return run(this.renderComposer.middleware(), ctx)
   }
 
@@ -60,6 +109,15 @@ export function createView<
     name: string,
 ) {
   return new View<C, State, Record<never, never>>(name, () => ({}))
+}
+export function createStrictView<
+  C extends Context & ViewBaseContextFlavor<C>,
+  State extends Record<string, any> = Record<never, never>,
+  PossibleTransitions extends GenericView<C> = never,
+  >(
+    name: string,
+) {
+  return new StrictView<C, State, Record<never, never>, PossibleTransitions>(name, () => ({}))
 }
 
 // class A {
