@@ -1,7 +1,7 @@
 {
   "name": "@loskir/grammy-views",
   "author": "Kirill Loskutov",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "./out/mod.js",
   "license": "MIT",
   "type": "commonjs",
