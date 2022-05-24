@@ -15,7 +15,7 @@ yarn add @loskir/grammy-views
 ### NPM
 
 ```bash
-npm i --save @loskir/grammy-viewa
+npm i --save @loskir/grammy-views
 ```
 
 ## Comparison with other solutions
