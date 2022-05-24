@@ -12,7 +12,7 @@ export class View<
   > extends Composer<C & ViewStateFlavor<State>> {
   private renderComposer: Composer<C & ViewStateFlavor<State>>
   public global: Composer<C>
-  public override: Composer<C>
+  public override: Composer<C & ViewStateFlavor<State>>
 
   constructor(
     public name: string,
