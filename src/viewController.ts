@@ -2,8 +2,8 @@ import { Composer, Context, MiddlewareFn, SessionFlavor } from "./deps.deno.ts"
 import { View, NotDefaultState } from "./view.ts"
 
 export interface ViewSessionData {
-  current: string
-  state: any
+  current?: string
+  state: Record<never, never>
 }
 export interface ViewSession {
   __views: ViewSessionData
@@ -34,7 +34,13 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
   }
 
   get current(): View<C, Record<string, unknown>> | undefined {
-    return this.views.get(this.session.current)
+    return this.session.current ? this.views.get(this.session.current) : undefined
+  }
+
+  async leave() {
+    // todo leave handlers
+    await Promise.resolve()
+    this.ctx.view.session.current = undefined
   }
 
   enter<S extends Record<string, unknown>, D extends Partial<S>>(view: View<C, S, D>, ...params: Record<never, never> extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) {
@@ -50,7 +56,6 @@ export class ViewContext<C extends Context & ViewBaseContextFlavor<C>> {
   }
 
   render() {
-    // we know that current context is compatible with current view
     return this.current?.enter(this.ctx)
   }
 }
