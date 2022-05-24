@@ -4,18 +4,32 @@ This is an early prototype for Grammy Views — UI framework for [grammY](https:
 
 Grammy Views is a UI framework for Telegram bots that provides abstractions for controlling UI states.
 
+## Installation
+
+### Yarn
+
+```bash
+yarn add @loskir/grammy-views
+```
+
+### NPM
+
+```bash
+npm i --save @loskir/grammy-viewa
+```
+
 ## Comparison with other solutions
 
 ### [grammY Router](https://grammy.dev/plugins/router.html)
 
 The Grammy Router is a basic implementation of the Finite State Machine, a concept for separating handlers into groups that are active only when the user is in a particular route.
 
-Grammy Views enables this behavior too, but provides higher-level abstractions (e.g. local states for each View). 
+Grammy Views enables this behavior too, but provides higher-level abstractions (e.g. local states for each View).
 
 ### [Telegraf](https://telegraf.js.org) Scenes
 
-Telegraf has Scenes, a similar abstraction which was the inspiration for this library. 
-Grammy Views uses almost the same concepts as Telegraf Scenes. 
+Telegraf has Scenes, a similar abstraction which was the inspiration for this library.
+Grammy Views uses almost the same concepts as Telegraf Scenes.
 The main difference is the type safety.
 
 | Telegraf term           | Grammy Views term        | Description                                                                         |
@@ -107,11 +121,11 @@ Each view must have a unique name.
 
 ### Render functions
 
-Each view can have a render function. 
-It's called when the view is entered. 
-Its purpose is to _render_ the view. 
-Usually it's done via editing a message or by sending a new one. 
-Render functions are set via `.render` method. 
+Each view can have a render function.
+It's called when the view is entered.
+Its purpose is to _render_ the view.
+Usually it's done via editing a message or by sending a new one.
+Render functions are set via `.render` method.
 Several render middlewares can be applied.
 
 ```ts
@@ -130,6 +144,7 @@ bot.command('enter', (ctx) => ctx.view.enter(SomeView))
 ### Handling updates
 
 There are 3 ways to handle updates on the view:
+
 - Local handlers
 - Global handlers
 - Override handlers
@@ -145,7 +160,7 @@ SomeView.command('test', (ctx) => ctx.reply('hello!'))
 bot.command('enter', (ctx) => ctx.view.enter(SomeView))
 ```
 
-```
+```text
 > /test
 < // nothing
 > /enter
@@ -164,7 +179,7 @@ const SomeView = createView('some-view')
 SomeView.global.command('enter_some_view', (ctx) => ctx.view.enter(SomeView))
 ```
 
-```
+```text
 > /enter_some_view
 < // now we are inside the view, even if we were in different view before
 ```
@@ -195,10 +210,9 @@ SomeOtherView.command('enter_some_view', (ctx) => {
 })
 ```
 
-
 ### State
 
-View can have state. 
+View can have state.
 It's used for both external data (like props) and internal data.
 It is defined via the second type parameter of `createView` function (the first is used to pass custom `Context` types).
 
@@ -238,6 +252,7 @@ Notice that `.setDefaultState` returns a new instance of `View`, so you can't ca
 const SomeView = createView<Context, {a: string}>('some-view')
   .setDefaultState(() => ({a: 'default a'}))
 ```
+
 ```ts
 // ❌ incorrect
 const SomeView = createView<Context, {a: string}>('some-view')
@@ -264,7 +279,6 @@ SomeView.global.callbackQuery('a', (ctx) => {
   // ❌ no state here
 })
 ```
-
 
 ### ViewController
 
