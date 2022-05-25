@@ -1,5 +1,5 @@
 import { MiddlewareFn, Context, Composer } from './deps.deno.ts'
-import { ViewBaseContextFlavor, ViewStateFlavor, ViewRenderFlavor } from './viewController.ts'
+import { ViewContextFlavor, ViewStateFlavor, ViewRenderFlavor } from './viewController.ts'
 
 type MaybePromise<T> = T | Promise<T>
 
@@ -8,7 +8,7 @@ type RequiredKeys<T extends Record<string, unknown>> = NonNullable<{ [key in key
 export type NotDefaultState<S extends Record<string, unknown>, D extends Partial<S> = Record<never, never>> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
 
 export class View<
-  C extends Context & ViewBaseContextFlavor = Context & ViewBaseContextFlavor,
+  C extends Context & ViewContextFlavor = Context & ViewContextFlavor,
   State extends Record<string, unknown> = Record<never, never>,
   DefaultState extends Partial<State> = Record<never, never>,
   > extends Composer<C & ViewStateFlavor<State> & ViewRenderFlavor> {
@@ -56,7 +56,7 @@ export class View<
 }
 
 export function createView<
-  C extends Context & ViewBaseContextFlavor,
+  C extends Context & ViewContextFlavor,
   State extends Record<string, unknown> = Record<never, never>,
   >(
     name: string,
@@ -64,4 +64,4 @@ export function createView<
   return new View<C, State, Record<never, never>>(name, () => ({}))
 }
 
-export type GenericView<C extends Context & ViewBaseContextFlavor = Context & ViewBaseContextFlavor> = View<C, any>
+export type GenericView<C extends Context & ViewContextFlavor = Context & ViewContextFlavor> = View<C, any>

@@ -30,14 +30,11 @@ interface ViewContext {
   leave(): Promise<unknown>
 }
 
-// private type to extend in generics. not transformative
-export type ViewBaseContextFlavor = SessionFlavor<ViewSession> & {
+export type ViewContextFlavor = SessionFlavor<ViewSession> & {
   view: ViewContext
 }
 
-export type ViewContextFlavor<C extends Context> = C & ViewBaseContextFlavor
-
-export class ViewController<C extends Context & ViewBaseContextFlavor> extends Composer<C> {
+export class ViewController<C extends Context & ViewContextFlavor> extends Composer<C> {
   private views: Map<string, View<C>> = new Map()
 
   private getCurrentView(ctx: C): View<C> | undefined {
