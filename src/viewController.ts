@@ -1,5 +1,5 @@
 import { Composer, Context, MiddlewareFn, SessionFlavor } from "./deps.deno.ts"
-import { View, NotDefaultState } from "./view.ts"
+import { View, NotDefaultState, GenericView } from "./view.ts"
 
 export interface ViewSessionData {
   current?: string
@@ -83,7 +83,7 @@ export class ViewController<C extends Context & ViewBaseContextFlavor<C>> extend
     return composer.middleware()
   }
 
-  register(...views: View<C>[]) {
+  register(...views: GenericView<C>[]) {
     for (const view of views) {
       if (this.views.has(view.name)) {
         throw new Error(`Duplicate view name: ${view.name}`)

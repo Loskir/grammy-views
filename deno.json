@@ -19,6 +19,11 @@
                 "./out/",
                 "./package-lock.json"
             ]
+        },
+        "rules": {
+            "exclude": [
+                "no-explicit-any"
+            ]
         }
     }
 }

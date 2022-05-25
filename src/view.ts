@@ -54,3 +54,5 @@ export function createView<
 ) {
   return new View<C, State, Record<never, never>>(name, () => ({}))
 }
+
+export type GenericView<C extends Context & ViewBaseContextFlavor<C> = Context & ViewBaseContextFlavor<Context>> = View<C, any>
