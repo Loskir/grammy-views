@@ -1,18 +1,20 @@
-import { MiddlewareFn, Context, Composer, run } from './deps.deno.ts'
-import { ViewBaseContextFlavor, ViewStateFlavor } from './viewController.ts'
+import { MiddlewareFn, Context, Composer } from './deps.deno.ts'
+import { ViewBaseContextFlavor, ViewStateFlavor, ViewRenderFlavor } from './viewController.ts'
+
+type MaybePromise<T> = T | Promise<T>
 
 type RequiredKeys<T extends Record<string, unknown>> = NonNullable<{ [key in keyof T]: undefined extends T[key] ? never : key }[keyof T]>
 
 export type NotDefaultState<S extends Record<string, unknown>, D extends Partial<S> = Record<never, never>> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
 
 export class View<
-  C extends Context & ViewBaseContextFlavor<C> = Context & ViewBaseContextFlavor<Context>,
+  C extends Context & ViewBaseContextFlavor = Context & ViewBaseContextFlavor,
   State extends Record<string, unknown> = Record<never, never>,
   DefaultState extends Partial<State> = Record<never, never>,
-  > extends Composer<C & ViewStateFlavor<State>> {
-  private renderComposer: Composer<C & ViewStateFlavor<State>>
+  > extends Composer<C & ViewStateFlavor<State> & ViewRenderFlavor> {
+  private renderComposer: Composer<C & ViewStateFlavor<State> & ViewRenderFlavor>
   public global: Composer<C>
-  public override: Composer<C & ViewStateFlavor<State>>
+  public override: Composer<C & ViewStateFlavor<State> & ViewRenderFlavor>
 
   constructor(
     public name: string,
@@ -28,8 +30,15 @@ export class View<
     this.renderComposer.use(...fn)
   }
 
-  enter(ctx: C & ViewStateFlavor<State>) {
-    return run(this.renderComposer.middleware(), ctx)
+  enter(ctx: C, ...params: Record<never, never> extends NotDefaultState<State, DefaultState> ? [data?: NotDefaultState<State, DefaultState>] : [data: NotDefaultState<State, DefaultState>]): MaybePromise<unknown> {
+    const ctx_ = ctx as C & ViewStateFlavor<State> & ViewRenderFlavor
+    ctx_.view.session.current = this.name
+    ctx_.view.state = this.applyDefaultState(params[0]!)
+    return this.renderComposer.middleware()(ctx_, () => Promise.resolve())
+  }
+
+  reenter(ctx: C & ViewStateFlavor<State> & ViewRenderFlavor) {
+    return this.renderComposer.middleware()(ctx, () => Promise.resolve())
   }
 
   applyDefaultState(input: NotDefaultState<State, DefaultState>): State {
@@ -47,7 +56,7 @@ export class View<
 }
 
 export function createView<
-  C extends Context & ViewBaseContextFlavor<C>,
+  C extends Context & ViewBaseContextFlavor,
   State extends Record<string, unknown> = Record<never, never>,
   >(
     name: string,
@@ -55,4 +64,4 @@ export function createView<
   return new View<C, State, Record<never, never>>(name, () => ({}))
 }
 
-export type GenericView<C extends Context & ViewBaseContextFlavor<C> = Context & ViewBaseContextFlavor<Context>> = View<C, any>
+export type GenericView<C extends Context & ViewBaseContextFlavor = Context & ViewBaseContextFlavor> = View<C, any>
