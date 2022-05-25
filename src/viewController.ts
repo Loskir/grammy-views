@@ -21,8 +21,6 @@ export type ViewRenderFlavor = {
 
 export type ViewStateFlavor<T> = { view: { state: T } }
 
-export type ViewRevertFlavor = { view: { revert(): unknown } }
-
 interface ViewContext {
   get state(): ViewBaseState
   set state(data: ViewBaseState)
