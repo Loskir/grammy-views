@@ -3,9 +3,11 @@ import { View, GenericView } from "./view.ts"
 
 type MaybePromise<T> = T | Promise<T>
 
+type ViewBaseState = Record<never, never>
+
 export interface ViewSessionData {
   current?: string
-  state: Record<never, never>
+  state: ViewBaseState
 }
 export interface ViewSession {
   __views: ViewSessionData
@@ -21,55 +23,16 @@ export type ViewStateFlavor<T> = { view: { state: T } }
 
 export type ViewRevertFlavor = { view: { revert(): unknown } }
 
-export class ViewContext<C extends SessionFlavor<ViewSession>> {
-  constructor(
-    private readonly ctx: C,
-    // private readonly views: Map<string, View<C>>,
-  ) { }
+interface ViewContext {
+  get state(): ViewBaseState
+  set state(data: ViewBaseState)
 
-  get session(): ViewSessionData {
-    return this.ctx.session.__views
-  }
-  set session(data) {
-    this.ctx.session.__views = data
-  }
-
-  get state() {
-    return this.session.state || {}
-  }
-  set state(data) {
-    this.session.state = data
-  }
-
-  // get current(): View<C> | undefined {
-  //   return this.session.current ? this.views.get(this.session.current) : undefined
-  // }
-
-
-  // enter<S extends Record<string, unknown>, D extends Partial<S>>(view: View<C, S, D>, ...params: Record<never, never> extends NotDefaultState<S, D> ? [data?: NotDefaultState<S, D>] : [data: NotDefaultState<S, D>]) {
-  //   if (!this.views.has(view.name)) {
-  //     console.warn(`Unregistered view: ${view.name}. Local handlers will not work`)
-  //   }
-  //   return view.enter(this.ctx, ...params)
-  // }
-
-  // render() {
-  //   return this.current?.enter(this.ctx)
-  // }
-
-  async leave() {
-    // todo leave handlers
-    await Promise.resolve()
-    this.session.current = undefined
-  }
+  leave(): Promise<unknown>
 }
 
 // private type to extend in generics. not transformative
 export type ViewBaseContextFlavor = SessionFlavor<ViewSession> & {
-  view: ViewContext<SessionFlavor<ViewSession>>
-  // view: {
-  //   state: Record<never, never>
-  // }
+  view: ViewContext
 }
 
 export type ViewContextFlavor<C extends Context> = C & ViewBaseContextFlavor
@@ -84,7 +47,19 @@ export class ViewController<C extends Context & ViewBaseContextFlavor> extends C
   middleware(): MiddlewareFn<C> {
     const composer = new Composer<C>()
     composer.use((ctx, next) => {
-      ctx.view = new ViewContext(ctx)
+      ctx.view = {
+        get state() {
+          return ctx.session.__views.state || {}
+        },
+        set state(data) {
+          ctx.session.__views.state = data
+        },
+        async leave() {
+          // todo leave handlers
+          await Promise.resolve()
+          ctx.session.__views.current = undefined
+        }
+      }
       return next()
     })
     composer.lazy((ctx) => {

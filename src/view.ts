@@ -32,7 +32,7 @@ export class View<
 
   enter(ctx: C, ...params: Record<never, never> extends NotDefaultState<State, DefaultState> ? [data?: NotDefaultState<State, DefaultState>] : [data: NotDefaultState<State, DefaultState>]): MaybePromise<unknown> {
     const ctx_ = ctx as C & ViewStateFlavor<State> & ViewRenderFlavor
-    ctx_.view.session.current = this.name
+    ctx_.session.__views.current = this.name
     ctx_.view.state = this.applyDefaultState(params[0]!)
     return this.renderComposer.middleware()(ctx_, () => Promise.resolve())
   }
