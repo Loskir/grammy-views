@@ -32,81 +32,22 @@ Telegraf has Scenes, a similar abstraction which was the inspiration for this li
 Grammy Views uses almost the same concepts as Telegraf Scenes.
 The main difference is the type safety.
 
-| Telegraf term           | Grammy Views term        | Description                                                                         |
-| ----------------------- | ------------------------ | ----------------------------------------------------------------------------------- |
-| Scene                   | View                     | Basic building block for the UI. Represents an isolated state with its own handlers |
-| Stage                   | ViewController           | Middleware that registers all views and provides context flavor                     |
-| ctx.scene               | ctx.view                 | Part of the context that is responsible for working with views/scenes               |
-| ctx.scene.session       | ctx.view.state           | Persistent storage that is bound to this view/scene                                 |
-| scene.enter             | view.render              | Middleware that is executed upon entering the view/scene                            |
-| ctx.scene.enter('name') | ctx.view.enter(SomeView) | Entering another view                                                               |
+| Telegraf term             | Grammy Views term     | Description                                                                         |
+| ------------------------- | --------------------- | ----------------------------------------------------------------------------------- |
+| Scene                     | View                  | Basic building block for the UI. Represents an isolated state with its own handlers |
+| `Stage`                     | `ViewController`        | Middleware that registers all views and provides context flavor                     |           |
+| `ctx.scene.session`         | `ctx.view.state`        | Persistent storage that is bound to this view/scene                                 |
+| `scene.enter`               | `view.render`           | Middleware that is executed upon entering the view/scene                            |
+| `ctx.scene.enter('name')` | `SomeView.enter(ctx)` | Entering another view                                                               |
 
 ## Documentation
 
-<!-- ### Codec
-
-An abstraction over encoding and decoding callback data.
-
-Example:
-
-```ts
-const SomeCodec = new Codec<{name: string}>({
-  encode(data) {
-    // this function encodes the data to string
-    return `some-codec-${data.name}`
-  }
-  decode(s) {
-    // this function matches and decodes the string back to the data structure
-    // if there's no match, it retuns null
-    const match = s.match(/^some-codec-(.+)$/)
-    if (!match) return null
-    return { name: match[1] }
-  }
-})
-```
-
-`ConstantCodec` is a shortcut for encoding data that has no dynamic parameters. 
-
-Example: 
-
-```ts
-const SomeCodec = new ConstantCodec('some-codec')
-```
-
-Codes are useful for unifying interfaces of transitions between states. Instead of specifying strings in different parts of the program, codecs allow you to define an interface in one place and use it everywhere.
-
-To use a codec inside callback button, you can call `.encode` method directly
-
-```ts
-bot.use((ctx) => ctx.reply('Codec', {
-  reply_markup: new InlineKeyboard().text('Button', SomeCodec.encode(data)),
-}))
-```
-
-or create and export a helper function
-
-```ts
-export const goToSomewhere(data: string) => SomeCodec.encode(data)
-bot.use((ctx) => ctx.reply('Codec', {
-  reply_markup: new InlineKeyboard().text('Button', goToSomewhere(data)),
-}))
-```
-
-To handle a codec, you can use `.filter` method:
-
-```ts
-bot.filter(SomeCodec.filter, (ctx) => ctx.reply(ctx.codec.toString()))
-```
-
-Decoded data is available via `ctx.codec`.
-
-> Side note. Q: What's the difference between a constant codec and a string? A: I don't know :D -->
 ### [Context flavor](https://grammy.dev/guide/context.html#context-flavors)
 
-You have to use `ViewContextFlavor` on your context in order for the types to be complete.
+You have to use `ViewContextFlavor` on your context in order for the types to be complete. It is [additive](https://grammy.dev/guide/context.html#additive-context-flavors) and does not take any type parameters.
 
 ```ts
-export type CustomContext = ViewContextFlavor<Context>
+export type CustomContext = Context & ViewContextFlavor
 ```
 
 ### View
@@ -138,7 +79,7 @@ SomeView.render((ctx) => ctx.reply('Hello from some view!'))
 ```ts
 import { SomeView } from './someView'
 
-bot.command('enter', (ctx) => ctx.view.enter(SomeView))
+bot.command('enter', (ctx) => SomeView.enter(ctx))
 ```
 
 ### Handling updates
@@ -157,7 +98,7 @@ Local handlers are defined the same way as with `Composer` and only work when th
 const SomeView = createView('some-view')
 SomeView.command('test', (ctx) => ctx.reply('hello!'))
 
-bot.command('enter', (ctx) => ctx.view.enter(SomeView))
+bot.command('enter', (ctx) => SomeView.enter(ctx))
 ```
 
 ```text
@@ -176,7 +117,7 @@ They are useful for defining global entrypoints for the view.
 
 ```ts
 const SomeView = createView('some-view')
-SomeView.global.command('enter_some_view', (ctx) => ctx.view.enter(SomeView))
+SomeView.global.command('enter_some_view', (ctx) => SomeView.enter(ctx))
 ```
 
 ```text
@@ -194,19 +135,19 @@ Override handlers > Global handlers > Local handlers.
 Override handlers are useful for overriding other global handlers to provide similar behavior, but with some state-dependent changes.
 
 ```ts
-const SomeView = createView<{a: string}>('some-view')
+const SomeView = createView<CustomContext, {a: string}>('some-view')
 SomeView.global.command('enter_some_view', (ctx) => {
-  return ctx.view.enter(SomeView, {a: 'we came from global handler'})
+  return SomeView.enter(ctx, {a: 'we came from global handler'})
 })
 
 const SomeOtherView = createView('some-other-view')
 SomeOtherView.override.command('enter_some_view', (ctx) => {
-  return ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'})
+  return SomeView.enter(ctx, {a: 'we came from SomeOtherView'})
 })
 
 // ❌ this won't work because global handlers have higher priority than local ones
 SomeOtherView.command('enter_some_view', (ctx) => {
-  return ctx.view.enter(SomeView, {a: 'we came from SomeOtherView'})
+  return SomeView.enter(ctx, {a: 'we came from SomeOtherView'})
 })
 ```
 
@@ -217,23 +158,23 @@ It's used for both external data (like props) and internal data.
 It is defined via the second type parameter of `createView` function (the first is used to pass custom `Context` types).
 
 ```ts
-const SomeView = createView<Context, {a: string}>('some-view')
+const SomeView = createView<CustomContext, {a: string}>('some-view')
 ```
 
 When entering a stateful view, it is required to pass appropriate state.
 
 ```ts
-bot.command('enter', (ctx) => ctx.view.enter(SomeView, {a: '123'}))
+bot.command('enter', (ctx) => SomeView.enter(ctx, {a: '123'}))
 ```
 
-`ctx.view.enter` function is strictly typed, so you'll get compilation error if you forgot some properties or confuse the types.
+`View.enter` method is strictly typed, so you'll get compilation error if you forgot some properties or confuse the types.
 
 #### Default state
 
 To define a default state, you use `.setDefaultState` method.
 
 ```ts
-const SomeView = createView<Context, {a: string}>('some-view')
+const SomeView = createView<CustomContext, {a: string}>('some-view')
   .setDefaultState(() => ({a: 'default a'}))
 ```
 
@@ -241,21 +182,21 @@ You don't have to pass properties from default state on enter (but you still can
 
 ```ts
 // ✅ both are correct
-bot.command('enter', (ctx) => ctx.view.enter(SomeView))
-bot.command('enter', (ctx) => ctx.view.enter(SomeView, {a: 'override'}))
+bot.command('enter', (ctx) => SomeView.enter(ctx))
+bot.command('enter', (ctx) => SomeView.enter(ctx, {a: 'override'}))
 ```
 
 Notice that `.setDefaultState` returns a new instance of `View`, so you can't call it on created instance.
 
 ```ts
 // ✅ correct
-const SomeView = createView<Context, {a: string}>('some-view')
+const SomeView = createView<CustomContext, {a: string}>('some-view')
   .setDefaultState(() => ({a: 'default a'}))
 ```
 
 ```ts
 // ❌ incorrect
-const SomeView = createView<Context, {a: string}>('some-view')
+const SomeView = createView<CustomContext, {a: string}>('some-view')
 SomeView.setDefaultState(() => ({a: 'default a'}))
 ```
 
@@ -265,7 +206,7 @@ View state is stored inside session an therefore is persisted between updates.
 It can be accessed via `ctx.view.state` in render middleware, local handlers and override handlers (but not in global handlers).
 
 ```ts
-const SomeView = createView<Context, {a: string}>('some-view')
+const SomeView = createView<CustomContext, {a: string}>('some-view')
 SomeView.render((ctx) => {
   return ctx.reply(ctx.view.state.a) // ✅
 })
@@ -296,15 +237,3 @@ viewController.register(
 
 bot.use(viewController)
 ```
-
-<!-- ## Known issues -->
-
-<!-- ### Inconsistency between entering the view directly and via codec util function
-
-```ts
-View.render((ctx) => ctx.reply('View', {
-  reply_markup: new InlineKeyboard().text('Button', goToMainMenu()),
-}))
-// but
-View.on(':text', async (ctx) => ctx.view.enter(MainView))
-``` -->
