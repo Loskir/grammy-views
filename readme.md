@@ -18,6 +18,12 @@ yarn add @loskir/grammy-views
 npm i --save @loskir/grammy-views
 ```
 
+### Deno
+
+```ts
+import { View } from "https://github.com/Loskir/grammy-views/raw/main/src/mod.ts";
+```
+
 ## Comparison with other solutions
 
 ### [grammY Router](https://grammy.dev/plugins/router.html)
