@@ -21,9 +21,9 @@ export class View<
     private defaultState: () => DefaultState,
   ) {
     super()
-    this.renderComposer = new Composer()
-    this.global = new Composer()
-    this.override = new Composer()
+    this.renderComposer = new Composer<C & ViewStateFlavor<State> & ViewRenderFlavor>()
+    this.global = new Composer<C>()
+    this.override = new Composer<C & ViewStateFlavor<State> & ViewRenderFlavor>()
   }
 
   render(...fn: MiddlewareFn<C & ViewStateFlavor<State>>[]) {
@@ -32,6 +32,9 @@ export class View<
 
   enter(ctx: C, ...params: Record<never, never> extends NotDefaultState<State, DefaultState> ? [data?: NotDefaultState<State, DefaultState>] : [data: NotDefaultState<State, DefaultState>]): MaybePromise<unknown> {
     const ctx_ = ctx as C & ViewStateFlavor<State> & ViewRenderFlavor
+    if (!ctx_.session.__views) {
+      ctx_.session.__views = {}
+    }
     ctx_.session.__views.current = this.name
     ctx_.view.state = this.applyDefaultState(params[0]!)
     return this.renderComposer.middleware()(ctx_, () => Promise.resolve())

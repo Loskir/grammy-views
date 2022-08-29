@@ -7,10 +7,10 @@ type ViewBaseState = Record<never, never>
 
 export interface ViewSessionData {
   current?: string
-  state: ViewBaseState
+  state?: ViewBaseState
 }
 export interface ViewSession {
-  __views: ViewSessionData
+  __views?: ViewSessionData
 }
 
 export type ViewRenderFlavor = {
@@ -36,7 +36,7 @@ export class ViewController<C extends Context & ViewContextFlavor> extends Compo
   private views: Map<string, View<C>> = new Map()
 
   private getCurrentView(ctx: C): View<C> | undefined {
-    return ctx.session.__views.current ? this.views.get(ctx.session.__views.current) : undefined
+    return ctx.session.__views?.current ? this.views.get(ctx.session.__views.current) : undefined
   }
 
   middleware(): MiddlewareFn<C> {
@@ -44,15 +44,18 @@ export class ViewController<C extends Context & ViewContextFlavor> extends Compo
     composer.use((ctx, next) => {
       ctx.view = {
         get state() {
-          return ctx.session.__views.state || {}
+          return ctx.session.__views?.state || {}
         },
         set state(data) {
+          if (!ctx.session.__views) {
+            ctx.session.__views = {}
+          }
           ctx.session.__views.state = data
         },
         async leave() {
           // todo leave handlers
           await Promise.resolve()
-          ctx.session.__views.current = undefined
+          delete ctx.session.__views
         }
       }
       return next()
