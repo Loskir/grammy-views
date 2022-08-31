@@ -12,4 +12,7 @@
         "https://crux.land": true,
         "https://lib.deno.dev": false
     },
+    "[typescript]": {
+        "editor.defaultFormatter": "denoland.vscode-deno"
+    }
 }
