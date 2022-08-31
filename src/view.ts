@@ -1,6 +1,7 @@
 import { Composer, Context, MiddlewareFn } from "./deps.deno.ts";
 import {
     ViewContextFlavor,
+    ViewNoLeaveFlavor,
     ViewRenderFlavor,
     ViewStateFlavor,
 } from "./viewController.ts";
@@ -26,28 +27,30 @@ export class View<
     State extends Record<string, unknown> = Record<never, never>,
     DefaultState extends Partial<State> = Record<never, never>,
 > extends Composer<C & ViewStateFlavor<State> & ViewRenderFlavor> {
-    private renderComposer: Composer<
-        C & ViewStateFlavor<State> & ViewRenderFlavor
-    >;
+    private renderComposer: Composer<C & ViewStateFlavor<State>>;
     public global: Composer<C>;
     public override: Composer<C & ViewStateFlavor<State> & ViewRenderFlavor>;
+    private leaveComposer: Composer<
+        C & ViewStateFlavor<State> & ViewNoLeaveFlavor
+    >;
 
     constructor(
         public name: string,
         private defaultState: () => DefaultState,
     ) {
         super();
-        this.renderComposer = new Composer<
-            C & ViewStateFlavor<State> & ViewRenderFlavor
-        >();
-        this.global = new Composer<C>();
-        this.override = new Composer<
-            C & ViewStateFlavor<State> & ViewRenderFlavor
-        >();
+        this.renderComposer = new Composer();
+        this.global = new Composer();
+        this.override = new Composer();
+        this.leaveComposer = new Composer();
     }
 
-    render(...fn: MiddlewareFn<C & ViewStateFlavor<State>>[]) {
+    onRender(...fn: MiddlewareFn<C & ViewStateFlavor<State>>[]) {
         this.renderComposer.use(...fn);
+    }
+
+    onLeave(...fn: MiddlewareFn<C & ViewStateFlavor<State> & ViewNoLeaveFlavor>[]) {
+        this.leaveComposer.use(...fn);
     }
 
     enter(
@@ -66,11 +69,17 @@ export class View<
         return this.renderComposer.middleware()(ctx_, () => Promise.resolve());
     }
 
-    reenter(ctx: C & ViewStateFlavor<State> & ViewRenderFlavor) {
-        return this.renderComposer.middleware()(ctx, () => Promise.resolve());
+    async _render(ctx: C & ViewStateFlavor<State> & ViewRenderFlavor) {
+        await this.renderComposer.middleware()(ctx, () => Promise.resolve());
     }
 
-    applyDefaultState(input: NotDefaultState<State, DefaultState>): State {
+    async _leave(ctx: C & ViewStateFlavor<State> & ViewNoLeaveFlavor) {
+        await this.leaveComposer.middleware()(ctx, () => Promise.resolve());
+    }
+
+    protected applyDefaultState(
+        input: NotDefaultState<State, DefaultState>,
+    ): State {
         // @ts-ignore: typescript fails here, but i'm pretty sure that DefaultState & NotDefaultState === State. Help wanted
         return Object.assign({}, this.defaultState(), input);
     }

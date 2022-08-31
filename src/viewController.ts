@@ -15,9 +15,11 @@ export interface ViewSession {
 
 export type ViewRenderFlavor = {
     view: {
-        render(): MaybePromise<unknown>;
+        render(): Promise<void>;
     };
 };
+
+export type ViewNoLeaveFlavor = { view: { leave: never } };
 
 export type ViewStateFlavor<T> = { view: { state: T } };
 
@@ -25,18 +27,19 @@ interface ViewContext {
     get state(): ViewBaseState;
     set state(data: ViewBaseState);
 
-    leave(): Promise<unknown>;
+    leave(): Promise<void>;
 }
 
 export type ViewContextFlavor = SessionFlavor<ViewSession> & {
     view: ViewContext;
 };
 
-export class ViewController<C extends Context & ViewContextFlavor>
-    extends Composer<C> {
+export class ViewController<
+    C extends Context & ViewContextFlavor,
+> extends Composer<C> {
     private views: Map<string, View<C>> = new Map();
 
-    private getCurrentView(ctx: C): View<C> | undefined {
+    private getCurrentView(ctx: C): GenericView<C> | undefined {
         return ctx.session.__views?.current
             ? this.views.get(ctx.session.__views.current)
             : undefined;
@@ -44,7 +47,7 @@ export class ViewController<C extends Context & ViewContextFlavor>
 
     middleware(): MiddlewareFn<C> {
         const composer = new Composer<C>();
-        composer.use((ctx, next) => {
+        composer.lazy((ctx) => {
             ctx.view = {
                 get state() {
                     return ctx.session.__views?.state || {};
@@ -55,15 +58,17 @@ export class ViewController<C extends Context & ViewContextFlavor>
                     }
                     ctx.session.__views.state = data;
                 },
-                async leave() {
-                    // todo leave handlers
-                    await Promise.resolve();
+                leave: async () => {
+                    const currentView = this.getCurrentView(ctx);
+                    // you cannot call leave inside leave, it doesn't make sense
+                    // we don't actually remove this method, just hide it from typescript
+                    // in a hacky way (yes i feel bad about it)
+                    const ctx_ = ctx as C & ViewNoLeaveFlavor;
+                    await currentView?._leave(ctx_);
                     delete ctx.session.__views;
                 },
             };
-            return next();
-        });
-        composer.lazy((ctx) => {
+
             const currentView = this.getCurrentView(ctx);
             if (!currentView) {
                 return super.middleware();
@@ -75,7 +80,10 @@ export class ViewController<C extends Context & ViewContextFlavor>
                     // we know that the current state is compatible with currentView
                     // but we have no type-level proof
                     // todo check this
-                    ctx.view.render = () => currentView.reenter(ctx);
+                    ctx.view.render = async () => {
+                        const currentView = this.getCurrentView(ctx);
+                        await currentView?._render(ctx);
+                    };
                     return next();
                 })
                 .use(currentView.override);
@@ -83,7 +91,7 @@ export class ViewController<C extends Context & ViewContextFlavor>
             c
                 .filter((_ctx): _ctx is C & ViewRenderFlavor => true)
                 .use((ctx, next) => {
-                    ctx.view.render = () => currentView.reenter(ctx);
+                    ctx.view.render = () => currentView._render(ctx);
                     return next();
                 })
                 .use(currentView);
