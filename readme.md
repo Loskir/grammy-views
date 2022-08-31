@@ -43,7 +43,8 @@ The main difference is the type safety.
 | Scene                     | View                  | Basic building block for the UI. Represents an isolated state with its own handlers |
 | `Stage`                   | `ViewController`      | Middleware that registers all views and provides context flavor                     |
 | `ctx.scene.session`       | `ctx.view.state`      | Persistent storage that is bound to this view/scene                                 |
-| `scene.enter`             | `view.render`         | Middleware that is executed upon entering the view/scene                            |
+| `scene.enter`             | `view.onRender`       | Middleware that is executed upon entering the view/scene                            |
+| `scene.leave`             | `view.onLeave`        | Middleware that is executed upon leaving the view/scene                             |
 | `ctx.scene.enter('name')` | `SomeView.enter(ctx)` | Entering another view                                                               |
 
 ## Documentation
@@ -58,7 +59,7 @@ export type CustomContext = Context & ViewContextFlavor;
 
 ### View
 
-A class that represents an isolated stage of the interface with its own view (`render` function) and handlers (local of global). (Similar to BaseScene in Telegraf)
+A class that represents an isolated stage of the interface with its own view (rendered with `onRender` middleware) and handlers (local of global). (Similar to BaseScene in Telegraf)
 
 ```ts
 const SomeView = createView("some-view");
@@ -72,12 +73,12 @@ Each view can have a render function.
 It's called when the view is entered.
 Its purpose is to _render_ the view.
 Usually it's done via editing a message or by sending a new one.
-Render functions are set via `.render` method.
+Render functions are set via `.onRender` method.
 Several render middlewares can be applied.
 
 ```ts
 const SomeView = createView("some-view");
-SomeView.render((ctx) => ctx.reply("Hello from some view!"));
+SomeView.onRender((ctx) => ctx.reply("Hello from some view!"));
 ```
 
 ### Entering a view
@@ -213,7 +214,7 @@ It can be accessed via `ctx.view.state` in render middleware, local handlers and
 
 ```ts
 const SomeView = createView<CustomContext, { a: string }>("some-view");
-SomeView.render((ctx) => {
+SomeView.onRender((ctx) => {
     return ctx.reply(ctx.view.state.a); // ✅
 });
 SomeView.callbackQuery("a", (ctx) => {
