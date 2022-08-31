@@ -3,9 +3,14 @@ import { ViewContextFlavor, ViewStateFlavor, ViewRenderFlavor } from './viewCont
 
 type MaybePromise<T> = T | Promise<T>
 
-type RequiredKeys<T extends Record<string, unknown>> = NonNullable<{ [key in keyof T]: undefined extends T[key] ? never : key }[keyof T]>
-
-export type NotDefaultState<S extends Record<string, unknown>, D extends Partial<S> = Record<never, never>> = Omit<S, RequiredKeys<D>> & Partial<Pick<S, keyof S>>
+// Set as optional those keys that are required in DefaultState
+// For example:
+// State = {a: string, b: string, c: string, d?: string}
+// DefaultState = {a: string, b?: string}
+// NotDefaultState = {a?: string, b: string, c: string, d?: string}
+type NotDefaultState<State extends Record<string, unknown>, DefaultState extends Partial<State>> = {
+  [K in keyof State]: undefined extends DefaultState[K] ? State[K] : (State[K] | undefined)
+}
 
 export class View<
   C extends Context & ViewContextFlavor = Context & ViewContextFlavor,
@@ -44,10 +49,9 @@ export class View<
     return this.renderComposer.middleware()(ctx, () => Promise.resolve())
   }
 
-  applyDefaultState(input: NotDefaultState<State, DefaultState>): State {
-    // nothing can go wrong riiiiiight?
-    // fixme
-    return Object.assign({}, this.defaultState(), input) as State
+  private applyDefaultState(input: NotDefaultState<State, DefaultState>): State {
+    // @ts-ignore: typescript fails here, but i'm pretty sure that DefaultState & NotDefaultState === State. Help wanted
+    return Object.assign({}, this.defaultState(), input)
   }
 
   setDefaultState<D extends Partial<State>>(defaultState: () => D): View<C, State, D> {
