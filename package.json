@@ -1,26 +1,26 @@
 {
-  "name": "@loskir/grammy-views",
-  "author": "Kirill Loskutov",
-  "version": "0.3.0",
-  "main": "./out/mod.js",
-  "license": "MIT",
-  "type": "commonjs",
-  "files": [
-    "out/"
-  ],
-  "exports": {
-    ".": "./out/mod.js"
-  },
-  "scripts": {
-    "build": "deno2node tsconfig.json",
-    "publish:npm": "npm publish --access=public"
-  },
-  "dependencies": {
-    "grammy": "^1.11.0"
-  },
-  "devDependencies": {
-    "@types/node": "16",
-    "typescript": "^4.5.5",
-    "deno2node": "^1.0.0"
-  }
+    "name": "@loskir/grammy-views",
+    "author": "Kirill Loskutov",
+    "version": "0.3.0",
+    "main": "./out/mod.js",
+    "license": "MIT",
+    "type": "commonjs",
+    "files": [
+        "out/"
+    ],
+    "exports": {
+        ".": "./out/mod.js"
+    },
+    "scripts": {
+        "build": "deno2node tsconfig.json",
+        "publish:npm": "npm publish --access=public"
+    },
+    "dependencies": {
+        "grammy": "^1.11.0"
+    },
+    "devDependencies": {
+        "@types/node": "16",
+        "typescript": "^4.5.5",
+        "deno2node": "^1.0.0"
+    }
 }

@@ -41,9 +41,9 @@ The main difference is the type safety.
 | Telegraf term             | Grammy Views term     | Description                                                                         |
 | ------------------------- | --------------------- | ----------------------------------------------------------------------------------- |
 | Scene                     | View                  | Basic building block for the UI. Represents an isolated state with its own handlers |
-| `Stage`                     | `ViewController`        | Middleware that registers all views and provides context flavor                     |           |
-| `ctx.scene.session`         | `ctx.view.state`        | Persistent storage that is bound to this view/scene                                 |
-| `scene.enter`               | `view.render`           | Middleware that is executed upon entering the view/scene                            |
+| `Stage`                   | `ViewController`      | Middleware that registers all views and provides context flavor                     |
+| `ctx.scene.session`       | `ctx.view.state`      | Persistent storage that is bound to this view/scene                                 |
+| `scene.enter`             | `view.render`         | Middleware that is executed upon entering the view/scene                            |
 | `ctx.scene.enter('name')` | `SomeView.enter(ctx)` | Entering another view                                                               |
 
 ## Documentation
@@ -53,7 +53,7 @@ The main difference is the type safety.
 You have to use `ViewContextFlavor` on your context in order for the types to be complete. It is [additive](https://grammy.dev/guide/context.html#additive-context-flavors) and does not take any type parameters.
 
 ```ts
-export type CustomContext = Context & ViewContextFlavor
+export type CustomContext = Context & ViewContextFlavor;
 ```
 
 ### View
@@ -61,7 +61,7 @@ export type CustomContext = Context & ViewContextFlavor
 A class that represents an isolated stage of the interface with its own view (`render` function) and handlers (local of global). (Similar to BaseScene in Telegraf)
 
 ```ts
-const SomeView = createView('some-view')
+const SomeView = createView("some-view");
 ```
 
 Each view must have a unique name.
@@ -76,16 +76,16 @@ Render functions are set via `.render` method.
 Several render middlewares can be applied.
 
 ```ts
-const SomeView = createView('some-view')
-SomeView.render((ctx) => ctx.reply('Hello from some view!'))
+const SomeView = createView("some-view");
+SomeView.render((ctx) => ctx.reply("Hello from some view!"));
 ```
 
 ### Entering a view
 
 ```ts
-import { SomeView } from './someView'
+import { SomeView } from "./someView";
 
-bot.command('enter', (ctx) => SomeView.enter(ctx))
+bot.command("enter", (ctx) => SomeView.enter(ctx));
 ```
 
 ### Handling updates
@@ -101,10 +101,10 @@ There are 3 ways to handle updates on the view:
 Local handlers are defined the same way as with `Composer` and only work when the user is inside this view.
 
 ```ts
-const SomeView = createView('some-view')
-SomeView.command('test', (ctx) => ctx.reply('hello!'))
+const SomeView = createView("some-view");
+SomeView.command("test", (ctx) => ctx.reply("hello!"));
 
-bot.command('enter', (ctx) => SomeView.enter(ctx))
+bot.command("enter", (ctx) => SomeView.enter(ctx));
 ```
 
 ```text
@@ -122,8 +122,8 @@ Global handlers are defined using `.global` prefix and work both inside and outs
 They are useful for defining global entrypoints for the view.
 
 ```ts
-const SomeView = createView('some-view')
-SomeView.global.command('enter_some_view', (ctx) => SomeView.enter(ctx))
+const SomeView = createView("some-view");
+SomeView.global.command("enter_some_view", (ctx) => SomeView.enter(ctx));
 ```
 
 ```text
@@ -141,20 +141,20 @@ Override handlers > Global handlers > Local handlers.
 Override handlers are useful for overriding other global handlers to provide similar behavior, but with some state-dependent changes.
 
 ```ts
-const SomeView = createView<CustomContext, {a: string}>('some-view')
-SomeView.global.command('enter_some_view', (ctx) => {
-  return SomeView.enter(ctx, {a: 'we came from global handler'})
-})
+const SomeView = createView<CustomContext, { a: string }>("some-view");
+SomeView.global.command("enter_some_view", (ctx) => {
+    return SomeView.enter(ctx, { a: "we came from global handler" });
+});
 
-const SomeOtherView = createView('some-other-view')
-SomeOtherView.override.command('enter_some_view', (ctx) => {
-  return SomeView.enter(ctx, {a: 'we came from SomeOtherView'})
-})
+const SomeOtherView = createView("some-other-view");
+SomeOtherView.override.command("enter_some_view", (ctx) => {
+    return SomeView.enter(ctx, { a: "we came from SomeOtherView" });
+});
 
 // ❌ this won't work because global handlers have higher priority than local ones
-SomeOtherView.command('enter_some_view', (ctx) => {
-  return SomeView.enter(ctx, {a: 'we came from SomeOtherView'})
-})
+SomeOtherView.command("enter_some_view", (ctx) => {
+    return SomeView.enter(ctx, { a: "we came from SomeOtherView" });
+});
 ```
 
 ### State
@@ -164,13 +164,13 @@ It's used for both external data (like props) and internal data.
 It is defined via the second type parameter of `createView` function (the first is used to pass custom `Context` types).
 
 ```ts
-const SomeView = createView<CustomContext, {a: string}>('some-view')
+const SomeView = createView<CustomContext, { a: string }>("some-view");
 ```
 
 When entering a stateful view, it is required to pass appropriate state.
 
 ```ts
-bot.command('enter', (ctx) => SomeView.enter(ctx, {a: '123'}))
+bot.command("enter", (ctx) => SomeView.enter(ctx, { a: "123" }));
 ```
 
 `View.enter` method is strictly typed, so you'll get compilation error if you forgot some properties or confuse the types.
@@ -180,30 +180,30 @@ bot.command('enter', (ctx) => SomeView.enter(ctx, {a: '123'}))
 To define a default state, you use `.setDefaultState` method.
 
 ```ts
-const SomeView = createView<CustomContext, {a: string}>('some-view')
-  .setDefaultState(() => ({a: 'default a'}))
+const SomeView = createView<CustomContext, { a: string }>("some-view")
+    .setDefaultState(() => ({ a: "default a" }));
 ```
 
 You don't have to pass properties from default state on enter (but you still can override them if you want)
 
 ```ts
 // ✅ both are correct
-bot.command('enter', (ctx) => SomeView.enter(ctx))
-bot.command('enter', (ctx) => SomeView.enter(ctx, {a: 'override'}))
+bot.command("enter", (ctx) => SomeView.enter(ctx));
+bot.command("enter", (ctx) => SomeView.enter(ctx, { a: "override" }));
 ```
 
 Notice that `.setDefaultState` returns a new instance of `View`, so you can't call it on created instance.
 
 ```ts
 // ✅ correct
-const SomeView = createView<CustomContext, {a: string}>('some-view')
-  .setDefaultState(() => ({a: 'default a'}))
+const SomeView = createView<CustomContext, { a: string }>("some-view")
+    .setDefaultState(() => ({ a: "default a" }));
 ```
 
 ```ts
 // ❌ incorrect
-const SomeView = createView<CustomContext, {a: string}>('some-view')
-SomeView.setDefaultState(() => ({a: 'default a'}))
+const SomeView = createView<CustomContext, { a: string }>("some-view");
+SomeView.setDefaultState(() => ({ a: "default a" }));
 ```
 
 #### Accessing the state
@@ -212,19 +212,19 @@ View state is stored inside session an therefore is persisted between updates.
 It can be accessed via `ctx.view.state` in render middleware, local handlers and override handlers (but not in global handlers).
 
 ```ts
-const SomeView = createView<CustomContext, {a: string}>('some-view')
+const SomeView = createView<CustomContext, { a: string }>("some-view");
 SomeView.render((ctx) => {
-  return ctx.reply(ctx.view.state.a) // ✅
-})
-SomeView.callbackQuery('a', (ctx) => {
-  return ctx.answerCallbackQuery(ctx.view.state.a) // ✅
-})
-SomeView.override.callbackQuery('a', (ctx) => {
-  return ctx.answerCallbackQuery(ctx.view.state.a) // ✅
-})
-SomeView.global.callbackQuery('a', (ctx) => {
-  // ❌ no state here
-})
+    return ctx.reply(ctx.view.state.a); // ✅
+});
+SomeView.callbackQuery("a", (ctx) => {
+    return ctx.answerCallbackQuery(ctx.view.state.a); // ✅
+});
+SomeView.override.callbackQuery("a", (ctx) => {
+    return ctx.answerCallbackQuery(ctx.view.state.a); // ✅
+});
+SomeView.global.callbackQuery("a", (ctx) => {
+    // ❌ no state here
+});
 ```
 
 ### ViewController
@@ -235,11 +235,11 @@ You have to `.use` it on your bot instance in order to be able to use `ctx.view`
 You have to register your views in this controller in order for them to work.
 
 ```ts
-const viewController = new ViewController<CustomContext>()
+const viewController = new ViewController<CustomContext>();
 viewController.register(
-  MainView,
-  OtherView,
-)
+    MainView,
+    OtherView,
+);
 
-bot.use(viewController)
+bot.use(viewController);
 ```
