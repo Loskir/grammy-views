@@ -49,7 +49,9 @@ export class View<
         this.renderComposer.use(...fn);
     }
 
-    onLeave(...fn: MiddlewareFn<C & ViewStateFlavor<State> & ViewNoLeaveFlavor>[]) {
+    onLeave(
+        ...fn: MiddlewareFn<C & ViewStateFlavor<State> & ViewNoLeaveFlavor>[]
+    ) {
         this.leaveComposer.use(...fn);
     }
 
@@ -61,11 +63,13 @@ export class View<
             : [data: NotDefaultState<State, DefaultState>]
     ): MaybePromise<unknown> {
         const ctx_ = ctx as C & ViewStateFlavor<State> & ViewRenderFlavor;
-        if (!ctx_.session.__views) {
-            ctx_.session.__views = {};
+        if (!ctx_.session) {
+            ctx_.session = {};
         }
-        ctx_.session.__views.current = this.name;
-        ctx_.view.state = this.applyDefaultState(params[0]!);
+        ctx_.session.__views = {
+            current: this.name,
+            state: this.applyDefaultState(params[0]!),
+        };
         return this.renderComposer.middleware()(ctx_, () => Promise.resolve());
     }
 
