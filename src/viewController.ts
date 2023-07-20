@@ -1,8 +1,6 @@
 import { Composer, Context, MiddlewareFn, SessionFlavor } from "./deps.deno.ts";
 import { GenericView, View } from "./view.ts";
 
-type MaybePromise<T> = T | Promise<T>;
-
 type ViewBaseState = Record<never, never>;
 
 export interface ViewSessionData {
@@ -127,5 +125,13 @@ export class ViewController<
             this.views.set(view.name, view);
         }
         this.use(...views.map((v) => v.global));
+    }
+
+    enter(ctx: C, name: string, ...params: any[]) {
+        const view = this.views.get(name);
+        if (!view) {
+            throw new Error(`The view '${name}' has not been registered!`);
+        }
+        return view.enter(ctx, ...params);
     }
 }
