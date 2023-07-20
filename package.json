@@ -15,7 +15,7 @@
         "build": "deno2node tsconfig.json",
         "publish:npm": "npm publish --access=public"
     },
-    "dependencies": {
+    "peerDependencies": {
         "grammy": "^1.11.0"
     },
     "devDependencies": {
