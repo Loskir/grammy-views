@@ -6,8 +6,6 @@ import {
     ViewStateFlavor,
 } from "./viewController.ts";
 
-type MaybePromise<T> = T | Promise<T>;
-
 type RequiredKeys<T extends Record<string, unknown>> = NonNullable<
     { [key in keyof T]: undefined extends T[key] ? never : key }[keyof T]
 >;
@@ -55,13 +53,14 @@ export class View<
         this.leaveComposer.use(...fn);
     }
 
-    enter(
+    async enter(
         ctx: C,
         ...params: Record<never, never> extends
             NotDefaultState<State, DefaultState>
             ? [data?: NotDefaultState<State, DefaultState>]
             : [data: NotDefaultState<State, DefaultState>]
-    ): MaybePromise<unknown> {
+    ): Promise<unknown> {
+        await ctx.view.leave();
         const ctx_ = ctx as C & ViewStateFlavor<State> & ViewRenderFlavor;
         if (!ctx_.session) {
             ctx_.session = {};
